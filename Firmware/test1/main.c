@@ -34,7 +34,7 @@ int main(void)
   
  // display_draw_string("TEST - 1234", 0, 12, FONT_SIZE_11, 0);
   
-  display_draw_string("TEST - 1234", 0, 32, FONT_SIZE_6, 0);
+  display_draw_string("TEST - 1234", 0, 40, FONT_SIZE_6, 0);
   
   display_update();
   
@@ -43,8 +43,14 @@ int main(void)
   {
     char tmp_str[32];
     //sprintf(tmp_str, "TEST-%d", counter);
-    sprintf(tmp_str, "TEST-%d    ", adc_raw_buffer0[0]);
+    
+    sprintf(tmp_str, "ADC1-%d    ", adc_raw_buffer0[0]);
     display_draw_string(tmp_str, 0, 12, FONT_SIZE_11, 0);
+    
+    sprintf(tmp_str, "ADC2-%d    ", adc_raw_buffer0[1]);
+    display_draw_string(tmp_str, 0, 24, FONT_SIZE_11, 0);
+    
+    
     display_update();
     counter++;
     

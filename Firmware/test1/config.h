@@ -59,7 +59,13 @@
 //Divided and amplified signal from probe -> ADC2
 #define ADC_OPAMP_IN_GPIO       GPIOA
 #define ADC_OPAMP_IN_PIN        GPIO_Pin_6
-#define ADC_OPAMP_IN_CHANNEL    ADC_Channel_17 //OPAMP2 OUT
+//#define ADC_OPAMP_IN_CHANNEL    ADC_Channel_17 //OPAMP2 OUT
+#define ADC_OPAMP_IN_CHANNEL    ADC_Channel_3
+
+
+#define ADC_OPAMP_NAME          OPAMP_Selection_OPAMP2
+#define ADC_OPAMP_GAIN          OPAMP_OPAMP_PGAGain_8
+#define ADC_OPAMP_POS_INPUT     OPAMP_NonInvertingInput_IO4//PA7 for OPAMP2
 
 
 

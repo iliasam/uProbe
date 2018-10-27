@@ -7,9 +7,12 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 void hardware_init_rcc(void);
+void hardware_opamp_init(void);
+
 void hardware_dwt_init(void);
 uint32_t hardware_dwt_get(void);
 uint8_t hardware_dwt_comapre(int32_t tp);
+
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -24,6 +27,7 @@ void hardware_init_all(void)
   SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
   
   hardware_dwt_init();
+  hardware_opamp_init();
 }
 
 //Initialize main clock system
@@ -53,6 +57,25 @@ void hardware_dwt_init(void)
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
   }
 }
+
+//OPAMP2 for ADC2
+void hardware_opamp_init(void)
+{
+  OPAMP_InitTypeDef       OPAMP_InitStructure;
+  
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+  
+  OPAMP_DeInit(ADC_OPAMP_NAME);
+  OPAMP_InitStructure.OPAMP_NonInvertingInput = ADC_OPAMP_POS_INPUT;
+  OPAMP_InitStructure.OPAMP_InvertingInput =  OPAMP_InvertingInput_PGA;
+  OPAMP_Init(ADC_OPAMP_NAME, &OPAMP_InitStructure);
+
+  OPAMP_PGAConfig(ADC_OPAMP_NAME, ADC_OPAMP_GAIN, OPAMP_PGAConnect_No);
+
+  OPAMP_Cmd(ADC_OPAMP_NAME, ENABLE);
+}
+
+// ***************************************************************************
 
 uint32_t hardware_dwt_get(void)
 {
