@@ -59,13 +59,27 @@
 //Divided and amplified signal from probe -> ADC2
 #define ADC_OPAMP_IN_GPIO       GPIOA
 #define ADC_OPAMP_IN_PIN        GPIO_Pin_6
-//#define ADC_OPAMP_IN_CHANNEL    ADC_Channel_17 //OPAMP2 OUT
-#define ADC_OPAMP_IN_CHANNEL    ADC_Channel_3
+#define ADC_OPAMP_IN_CHANNEL    ADC_Channel_3//OPAMP2 OUT
 
 
 #define ADC_OPAMP_NAME          OPAMP_Selection_OPAMP2
 #define ADC_OPAMP_GAIN          OPAMP_OPAMP_PGAGain_8
 #define ADC_OPAMP_POS_INPUT     OPAMP_NonInvertingInput_IO4//PA7 for OPAMP2
+
+// GENERATOR TIMER ************************************************************
+// Timer used to generate test signal
+#define GENERATOR_TIMER_CLK             RCC_APB1Periph_TIM3
+
+#define GENERATOR_TIMER                 TIM3
+#define GENERATOR_TIMER_PRESCALER       (32)
+#define GENERATOR_TIMER_FREQ            100  //Hz
+
+#define GENERATOR_TIMER_GPIO_CLK        RCC_AHBPeriph_GPIOB
+#define GENERATOR_TIMER_GPIO            GPIOB
+#define GENERATOR_TIMER_PIN             GPIO_Pin_7
+#define GENERATOR_TIMER_AF_SOURCE       GPIO_PinSource7
+#define GENERATOR_TIMER_PIN_AFIO        GPIO_AF_10
+
 
 
 

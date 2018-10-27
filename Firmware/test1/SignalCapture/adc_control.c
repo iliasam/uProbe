@@ -68,7 +68,7 @@ void set_adc_buf(void)
 */
 
 
-//configure DMA
+// Configure DMA and start timer
 void adc_capture_start(void)
 {
   DMA_Cmd(DMA1_Channel1, DISABLE);
@@ -102,7 +102,7 @@ void adc_start_trigger_timer(void)
 }
 
 
-//формирует clk для линейки и управляет ADC
+//ADC trigger timer
 void adc_trigger_timer_init(void)
 {
   RCC_APB2PeriphClockCmd(ADC_TIMER_CLK, ENABLE);//APB2 = HCLK

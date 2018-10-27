@@ -5,7 +5,9 @@
 #include "SSD1315.h"
 #include "display_functions.h"
 #include "adc_control.h"
-#include "stdio.h"
+#include "generator_timer.h"
+
+#include <stdio.h>
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -26,7 +28,12 @@ int main(void)
   /* Infinite loop */
   
   adc_init_all();
+  //generator_timer_activate_gpio();
+  //generator_timer_init();
   adc_capture_start();
+  
+  //generator_timer_set_high_gpio();
+  
   
   display_clear();
   

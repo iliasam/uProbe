@@ -1055,6 +1055,9 @@
       <name>$PROJ_DIR$\..\config.h</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\generator_timer.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\hardware.c</name>
     </file>
     <file>
