@@ -1,6 +1,8 @@
 #ifndef __SSD1315_H
 #define __SSD1315_H
 
+/* Includes ------------------------------------------------------------------*/
+
 #include "config.h"
 
 #include <stdint.h>
@@ -40,51 +42,26 @@ void display_init_pins(void);
 void display_delay(unsigned long p);	//	задержка
 #define DELAY_NOP				display_delay(10);
 
-
 void display_write_data(unsigned char dat);
-
 void display_write_cmd(unsigned char cmd);
-
 void display_set_start_line(unsigned char line);
-
 void display_set_page_address(unsigned char page);
-
 void display_set_column_address(unsigned char column);
-
 void display_Power_Control(unsigned char vol);
-
-
 void display_set_contrast_value(unsigned char value);
-void display_Regulor_Resistor_Select(unsigned char r);
 
 void display_enable_power(void);
 void display_disable_power(void);
 
-//	инициализация дисплея
 void display_init(void);
-
-//	очистка дисплея
 void display_clear(void);
-//	Установка курсора
-// 	Input : x,y - координаты символа
+
 void display_gotoxy(unsigned char x,unsigned char y);
-//	Преобразование символов через таблицу символов для вывода на дисплей
-//	Input : с - символ в ASCII кодировке
 unsigned char display_symbol_decode(unsigned char c);
-//	Отправка символа на дисплей
-//	Input : с - символ в ASCII кодировке
 void display_putch(unsigned char c);
-//	Отправка инвертированного символа на дисплей
-//	Input : с - символ в ASCII кодировке
 void display_putch_inv(unsigned char c);
-//	Отправка строки на дисплей
-//	Input : s - строка
 void display_puts(char *s);
-//	Отправка инвертированной строки на дисплей
-//	Input : s - строка
 void display_puts_inv(char *s);
-
-
 void display_send_full_framebuffer(uint8_t* data);
 
 #endif

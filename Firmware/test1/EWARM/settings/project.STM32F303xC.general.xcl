@@ -2,7 +2,7 @@
 
 "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\arm\bin\armstlink2.dll" 
 
-"D:\MYPROGS\uProbe\Firmware\test1\EWARM\STM32F303xC\Exe\Project.out" 
+"D:\GITHUB\uProbe\Firmware\test1\EWARM\STM32F303xC\Exe\Project.out" 
 
 --plugin "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\arm\bin\armbat.dll" 
 

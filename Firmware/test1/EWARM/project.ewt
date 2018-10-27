@@ -1064,6 +1064,15 @@
     </file>
   </group>
   <group>
+    <name>SignalCapture</name>
+    <file>
+      <name>$PROJ_DIR$\..\SignalCapture\adc_control.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\SignalCapture\adc_control.h</name>
+    </file>
+  </group>
+  <group>
     <name>STM32F30x_SPL</name>
     <file>
       <name>$PROJ_DIR$\..\STM32F30x_StdPeriph_Driver\src\stm32f30x_adc.c</name>
@@ -1130,6 +1139,9 @@
     <name>User</name>
     <file>
       <name>$PROJ_DIR$\..\config.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\hardware.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\main.c</name>

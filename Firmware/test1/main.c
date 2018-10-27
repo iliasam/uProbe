@@ -1,33 +1,57 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include "hardware.h"
 #include "SSD1315.h"
 #include "display_functions.h"
+#include "adc_control.h"
+#include "stdio.h"
+
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+extern volatile cap_status_type adc_capture_status;
+extern volatile uint16_t adc_raw_buffer0[ADC_BUFFER_SIZE];
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
 int main(void)
 {
+  hardware_init_all();
+  
   display_init();
   /* Infinite loop */
+  
+  adc_init_all();
+  adc_capture_start();
   
   display_clear();
   
   display_draw_string("TEST - 1234", 0, 0, FONT_SIZE_8, 0);
   
-  display_draw_string("TEST - 1234", 0, 12, FONT_SIZE_11, 0);
+ // display_draw_string("TEST - 1234", 0, 12, FONT_SIZE_11, 0);
   
   display_draw_string("TEST - 1234", 0, 32, FONT_SIZE_6, 0);
   
   display_update();
   
+  uint16_t counter = 0;
   while (1)
   {
+    char tmp_str[32];
+    //sprintf(tmp_str, "TEST-%d", counter);
+    sprintf(tmp_str, "TEST-%d    ", adc_raw_buffer0[0]);
+    display_draw_string(tmp_str, 0, 12, FONT_SIZE_11, 0);
+    display_update();
+    counter++;
+    
+    if (adc_capture_status == CAPTURE_DONE)
+    {
+      adc_capture_start();
+    }
   }
 }
 

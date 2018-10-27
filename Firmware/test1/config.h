@@ -39,6 +39,28 @@
 #define DISPLAY_MOSI_GPIO       GPIOB
 #define DISPLAY_MOSI_PIN        GPIO_Pin_15
 
+// ADC TIMER ******************************************************************
+// Timer used to trigger ADC1 and ADC2
+#define ADC_TIMER_CLK           RCC_APB2Periph_TIM1
+
+#define ADC_TIMER               TIM1
+
+#define ADC_TIMER_PERIOD        100  //72M/12 = 6mhz
+
+// ADC ************************************************************************
+
+#define ADC_SAMPLING_TIME       ADC_SampleTime_1Cycles5
+
+//Divided signal from probe -> ADC1
+#define ADC_MAIN_IN_GPIO        GPIOA
+#define ADC_MAIN_IN_PIN         GPIO_Pin_2
+#define ADC_MAIN_IN_CHANNEL     ADC_Channel_3
+
+//Divided and amplified signal from probe -> ADC2
+#define ADC_OPAMP_IN_GPIO       GPIOA
+#define ADC_OPAMP_IN_PIN        GPIO_Pin_6
+#define ADC_OPAMP_IN_CHANNEL    ADC_Channel_17 //OPAMP2 OUT
+
 
 
 /* Exported types ------------------------------------------------------------*/

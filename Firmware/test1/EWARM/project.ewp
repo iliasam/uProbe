@@ -319,6 +319,7 @@
           <state>$PROJ_DIR$\..\System</state>
           <state>$PROJ_DIR$\..\STM32F30x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\Display</state>
+          <state>$PROJ_DIR$\..\SignalCapture</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -602,7 +603,7 @@
         <option>
           <name>OOCOutputFormat</name>
           <version>3</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -610,7 +611,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>project.srec</state>
+          <state>project.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -618,7 +619,7 @@
         </option>
         <option>
           <name>OOCObjCopyEnable</name>
-          <state>0</state>
+          <state>1</state>
         </option>
       </data>
     </settings>
@@ -977,6 +978,15 @@
     </file>
   </group>
   <group>
+    <name>SignalCapture</name>
+    <file>
+      <name>$PROJ_DIR$\..\SignalCapture\adc_control.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\SignalCapture\adc_control.h</name>
+    </file>
+  </group>
+  <group>
     <name>STM32F30x_SPL</name>
     <file>
       <name>$PROJ_DIR$\..\STM32F30x_StdPeriph_Driver\src\stm32f30x_adc.c</name>
@@ -1043,6 +1053,9 @@
     <name>User</name>
     <file>
       <name>$PROJ_DIR$\..\config.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\hardware.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\main.c</name>
