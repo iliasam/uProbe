@@ -66,6 +66,8 @@
 #define ADC_OPAMP_GAIN          OPAMP_OPAMP_PGAGain_8
 #define ADC_OPAMP_POS_INPUT     OPAMP_NonInvertingInput_IO4//PA7 for OPAMP2
 
+#define MCU_VREF                3.22f //There is some drop at RC-filter
+
 // GENERATOR TIMER ************************************************************
 // Timer used to generate test signal
 #define GENERATOR_TIMER_CLK             RCC_APB1Periph_TIM3
@@ -80,6 +82,11 @@
 #define GENERATOR_TIMER_AF_SOURCE       GPIO_PinSource7
 #define GENERATOR_TIMER_PIN_AFIO        GPIO_AF_10
 
+// DAC for comparator *********************************************************
+#define DAC_GPIO                GPIOA
+#define DAC_PIN                 GPIO_Pin_4
+#define DAC_CHANNEL             DAC_Channel_1
+#define DAC_NAME                DAC1
 
 
 

@@ -985,6 +985,12 @@
     <file>
       <name>$PROJ_DIR$\..\SignalCapture\adc_control.h</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\SignalCapture\comparator_handling.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\SignalCapture\comparator_handling.h</name>
+    </file>
   </group>
   <group>
     <name>STM32F30x_SPL</name>

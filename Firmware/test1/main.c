@@ -6,6 +6,7 @@
 #include "display_functions.h"
 #include "adc_control.h"
 #include "generator_timer.h"
+#include "comparator_handling.h"
 
 #include <stdio.h>
 
@@ -34,6 +35,7 @@ int main(void)
   
   //generator_timer_set_high_gpio();
   
+  dac_init();
   
   display_clear();
   
