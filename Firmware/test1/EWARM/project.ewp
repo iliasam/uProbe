@@ -43,11 +43,11 @@
         <option>
           <name>Output variant</name>
           <version>2</version>
-          <state>5</state>
+          <state>4</state>
         </option>
         <option>
           <name>Output description</name>
-          <state>No specifier a, A, no specifier n, no float nor long long.</state>
+          <state>No specifier a, A, without multibyte support.</state>
         </option>
         <option>
           <name>GOutputBinary</name>
@@ -1068,6 +1068,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\main.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\power_controlling.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\stm32f30x_it.c</name>

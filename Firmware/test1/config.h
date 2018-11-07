@@ -83,10 +83,27 @@
 #define GENERATOR_TIMER_PIN_AFIO        GPIO_AF_10
 
 // DAC for comparator *********************************************************
-#define DAC_GPIO                GPIOA
-#define DAC_PIN                 GPIO_Pin_4
-#define DAC_CHANNEL             DAC_Channel_1
-#define DAC_NAME                DAC1
+#define DAC_GPIO                        GPIOA
+#define DAC_PIN                         GPIO_Pin_4
+#define DAC_CHANNEL                     DAC_Channel_1
+#define DAC_NAME                        DAC1
+
+// Comparator *****************************************************************
+#define COMP_CAP_GPIO                   GPIOB
+#define COMP_CAP_PIN                    GPIO_Pin_11 //COMP6_INP
+
+// POWER CONTROLLING **********************************************************
+#define BATTERY_ADC_GPIO                GPIOB
+#define BATTERY_ADC_PIN                 GPIO_Pin_12 //BAT_VOLT
+#define BATTERY_ADC_PIN_CHANNEL         ADC_Channel_3 //ADC4
+
+// Battery divider GND
+#define BATTERY_MEAS_GND_GPIO           GPIOA
+#define BATTERY_MEAS_GND_PIN            GPIO_Pin_12 //MEAS_GND
+
+// Battery voltage divider coefficient
+#define BATTERY_DIV_VALUE               (2.0f)
+
 
 
 

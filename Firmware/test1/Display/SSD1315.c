@@ -42,7 +42,27 @@ void display_enable_power(void)
 
 void display_disable_power(void)
 {
-  GPIO_SetBits(DISPLAY_PWR_N_GPIO, DISPLAY_PWR_N_PIN);
+  //GPIO_SetBits(DISPLAY_PWR_N_GPIO, DISPLAY_PWR_N_PIN);
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;//deinit pins
+  
+  GPIO_InitStructure.GPIO_Pin = DISPLAY_CLK_PIN;
+  GPIO_Init(DISPLAY_CLK_GPIO, &GPIO_InitStructure);
+  
+  GPIO_InitStructure.GPIO_Pin = DISPLAY_MOSI_PIN;
+  GPIO_Init(DISPLAY_MOSI_GPIO, &GPIO_InitStructure);
+  
+  GPIO_InitStructure.GPIO_Pin = DISPLAY_DC_N_PIN;
+  GPIO_Init(DISPLAY_DC_N_GPIO, &GPIO_InitStructure);
+  
+  GPIO_InitStructure.GPIO_Pin = DISPLAY_CS_N_PIN;
+  GPIO_Init(DISPLAY_CS_N_GPIO, &GPIO_InitStructure);
+  
+  GPIO_InitStructure.GPIO_Pin = DISPLAY_RES_N_PIN;
+  GPIO_Init(DISPLAY_RES_N_GPIO, &GPIO_InitStructure);
+  
+  GPIO_InitStructure.GPIO_Pin = DISPLAY_PWR_N_PIN;
+  GPIO_Init(DISPLAY_PWR_N_GPIO, &GPIO_InitStructure);
 }
 
 

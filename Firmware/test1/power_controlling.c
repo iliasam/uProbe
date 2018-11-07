@@ -1,0 +1,149 @@
+/* Includes ------------------------------------------------------------------*/
+#include "power_controlling.h"
+#include "hardware.h"
+#include "stm32f30x_gpio.h"
+#include "SSD1315.h"
+
+/* Private typedef -----------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+#define BATTERY_ADC_NAME        ADC4
+
+#define BATTERY_ADC_CYCLES      256
+
+#define BATTERY_ADC_MAX_VALUE   4095.0f
+
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+volatile uint16_t raw_batt_value = 0;
+volatile float battery_voltage = 0.0;
+/* Private function prototypes -----------------------------------------------*/
+
+/* Private functions ---------------------------------------------------------*/
+
+void power_controlling_init_adc(void)
+{
+  ADC_InitTypeDef ADC_InitStructure;
+  ADC_CommonInitTypeDef ADC_CommonInitStructure;
+
+  RCC_ADCCLKConfig(RCC_ADC34PLLCLK_Div8);
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_ADC34, ENABLE);
+  
+  ADC_DeInit(BATTERY_ADC_NAME);
+  
+  // Calibration
+  ADC_VoltageRegulatorCmd(BATTERY_ADC_NAME, ENABLE);
+  dwt_delay_us(1000);
+  ADC_SelectCalibrationMode(BATTERY_ADC_NAME, ADC_CalibrationMode_Single);//Single input
+  ADC_StartCalibration(BATTERY_ADC_NAME);
+  while(ADC_GetCalibrationStatus(BATTERY_ADC_NAME) != RESET);
+  
+    // ADC Common configuration *************************************************
+  ADC_CommonStructInit(&ADC_CommonInitStructure);
+  ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
+  ADC_CommonInitStructure.ADC_Clock = ADC_Clock_AsynClkMode;
+  ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
+  ADC_CommonInitStructure.ADC_DMAMode = ADC_DMAMode_OneShot;
+  ADC_CommonInitStructure.ADC_TwoSamplingDelay = 0;
+  ADC_CommonInit(BATTERY_ADC_NAME, &ADC_CommonInitStructure);
+  
+  ADC_StructInit(&ADC_InitStructure);
+  ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
+  ADC_InitStructure.ADC_ContinuousConvMode = ADC_ContinuousConvMode_Enable;
+  ADC_InitStructure.ADC_ExternalTrigConvEvent = ADC_ExternalTrigConvEvent_0;
+  ADC_InitStructure.ADC_ExternalTrigEventEdge = ADC_ExternalTrigEventEdge_None;
+  ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+  ADC_InitStructure.ADC_OverrunMode = ADC_OverrunMode_Disable;
+  ADC_InitStructure.ADC_AutoInjMode = ADC_AutoInjec_Disable;
+  ADC_InitStructure.ADC_NbrOfRegChannel = 1;// One channel for this ADC
+  ADC_Init(BATTERY_ADC_NAME, &ADC_InitStructure);
+  
+  ADC_RegularChannelConfig(
+    BATTERY_ADC_NAME, BATTERY_ADC_PIN_CHANNEL, 1, ADC_SampleTime_601Cycles5);
+  
+}
+
+void power_controlling_meas_battery_voltage(void)
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  
+  //Set measurement GND to LOW
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = BATTERY_MEAS_GND_PIN;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
+  GPIO_Init(BATTERY_MEAS_GND_GPIO, &GPIO_InitStructure);
+  GPIO_ResetBits(BATTERY_MEAS_GND_GPIO, BATTERY_MEAS_GND_PIN);
+  
+  ADC_Cmd(BATTERY_ADC_NAME, ENABLE);
+  while(!ADC_GetFlagStatus(BATTERY_ADC_NAME, ADC_FLAG_RDY));
+  dwt_delay_us(1000);
+  
+  ADC_StartConversion(BATTERY_ADC_NAME);
+      
+  //skip first ADC cycles
+  for (uint8_t i = 0; i < 16; i++)
+  {
+    while(ADC_GetFlagStatus(BATTERY_ADC_NAME, ADC_FLAG_EOC) == RESET);
+  }
+  
+  uint32_t adc_summ = 0;
+  
+  for (uint16_t i = 0; i < BATTERY_ADC_CYCLES; i++)
+  {
+    while(ADC_GetFlagStatus(BATTERY_ADC_NAME, ADC_FLAG_EOC) == RESET);
+    adc_summ += ADC_GetConversionValue(BATTERY_ADC_NAME);
+  }
+
+  ADC_StopConversion(BATTERY_ADC_NAME);
+  dwt_delay_us(500);
+  ADC_Cmd(BATTERY_ADC_NAME, DISABLE);
+  
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_Init(BATTERY_MEAS_GND_GPIO, &GPIO_InitStructure);
+  
+  raw_batt_value = adc_summ / BATTERY_ADC_CYCLES;
+  
+  battery_voltage = (float)raw_batt_value * 
+    MCU_VREF * BATTERY_DIV_VALUE / BATTERY_ADC_MAX_VALUE ;
+  
+}
+
+//функция ухода в спящий режим
+void power_controlling_enter_sleep(void)
+{
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+  dwt_delay_us(10);
+  /*
+  EXTI_Configuration(ENABLE);
+  
+  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+  
+  NVIC_InitTypeDef NVIC_InitStructure;
+  NVIC_InitStructure.NVIC_IRQChannel                    = RTCAlarm_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority  = 1;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority         = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd                 = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
+  */
+  
+  PWR_WakeUpPinCmd(PWR_WakeUpPin_1, ENABLE);
+  SysTick->CTRL = 0;// disable Systick
+  display_disable_power();
+  __disable_irq();
+    
+  
+  PWR_ClearFlag(PWR_FLAG_WU | PWR_FLAG_SB);//WU=WUF
+  PWR_EnterSTANDBYMode();
+  
+}
+
+
+uint8_t power_controlling_is_debug(void)
+{
+  if(CoreDebug->DHCSR & 1)
+    return 1;
+  else 
+    return 0;
+}
+
+

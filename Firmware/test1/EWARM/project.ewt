@@ -1156,6 +1156,9 @@
       <name>$PROJ_DIR$\..\main.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\power_controlling.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\stm32f30x_it.c</name>
     </file>
   </group>

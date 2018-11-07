@@ -169,11 +169,11 @@ void adc_init(void)
   ADC_CommonInitStructure.ADC_Clock = ADC_Clock_SynClkModeDiv1;
   ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_1;
   ADC_CommonInitStructure.ADC_DMAMode = ADC_DMAMode_OneShot;
-  ADC_CommonInitStructure.ADC_TwoSamplingDelay = 1;
+  ADC_CommonInitStructure.ADC_TwoSamplingDelay = 0;
   ADC_CommonInit(ADC1, &ADC_CommonInitStructure);
 
   ADC_StructInit(&ADC_InitStructure);
-  ADC_InitStructure.ADC_Resolution = ADC_Resolution_10b;
+  ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
   
   ADC_InitStructure.ADC_ContinuousConvMode = ADC_ContinuousConvMode_Disable;//ext trigger
   ADC_InitStructure.ADC_ExternalTrigConvEvent = ADC_ExternalTrigConvEvent_9;//TIM1_TRGO

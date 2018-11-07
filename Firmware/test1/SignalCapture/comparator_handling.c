@@ -35,3 +35,21 @@ void dac_init(void)
 
   DAC_SetChannel1Data(DAC_NAME, DAC_Align_12b_R, 2048);
 }
+
+void comparator_init(void)
+{
+
+}
+
+void comparator_switch_to_filter(void)
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  
+  //Connect COMP6_INP - capacitor to GND
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_Pin = COMP_CAP_PIN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_Init(COMP_CAP_GPIO, &GPIO_InitStructure);
+  GPIO_ResetBits(COMP_CAP_GPIO, COMP_CAP_PIN);
+}

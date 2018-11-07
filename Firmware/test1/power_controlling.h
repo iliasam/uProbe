@@ -1,6 +1,6 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __COMPARATOR_HANDLING_H
-#define __COMPARATOR_HANDLING_H
+#ifndef __POWER_CONTROLLING_H
+#define __POWER_CONTROLLING_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f30x.h"
@@ -10,9 +10,9 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void dac_init(void);
-void comparator_init(void);
-void comparator_switch_to_filter(void);
+uint8_t power_controlling_is_debug(void);
+void power_controlling_init_adc(void);
+void power_controlling_meas_battery_voltage(void);
+void power_controlling_enter_sleep(void);
 
-
-#endif /* __COMPARATOR_HANDLING_H */
+#endif /* __POWER_CONTROLLING_H */
