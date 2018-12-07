@@ -980,16 +980,16 @@
   <group>
     <name>SignalCapture</name>
     <file>
-      <name>$PROJ_DIR$\..\SignalCapture\adc_control.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\SignalCapture\adc_control.h</name>
+      <name>$PROJ_DIR$\..\SignalCapture\adc_controlling.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\SignalCapture\comparator_handling.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\SignalCapture\comparator_handling.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\SignalCapture\data_processing.c</name>
     </file>
   </group>
   <group>
@@ -1067,7 +1067,13 @@
       <name>$PROJ_DIR$\..\hardware.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\keys_controlling.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\main.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\menu_controlling.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\power_controlling.c</name>

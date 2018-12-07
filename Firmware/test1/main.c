@@ -4,10 +4,13 @@
 #include "hardware.h"
 #include "SSD1315.h"
 #include "display_functions.h"
-#include "adc_control.h"
+#include "adc_controlling.h"
 #include "generator_timer.h"
 #include "comparator_handling.h"
 #include "power_controlling.h"
+#include "keys_controlling.h"
+#include "menu_controlling.h"
+#include "data_processing.h"
 
 #include <stdio.h>
 
@@ -16,10 +19,14 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern volatile cap_status_type adc_capture_status;
-extern volatile uint16_t adc_raw_buffer0[ADC_BUFFER_SIZE];
 extern volatile float battery_voltage;
 extern volatile uint32_t ms_tick;
+
+// Variable to count 1 ms periods
+uint32_t timer_1ms = 0;
+
+// Variable to count 10 ms periods
+uint32_t timer_10ms = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -29,60 +36,37 @@ int main(void)
   hardware_init_all();
   
   display_init();
-  /* Infinite loop */
-  
+  dac_init();
   adc_init_all();
-  //generator_timer_activate_gpio();
-  //generator_timer_init();
-  adc_capture_start();
+  generator_timer_init();//<<
   
+  //generator_timer_activate_gpio();
   //generator_timer_set_high_gpio();
   
-  dac_init();
+  
   //comparator_switch_to_filter();
+  comparator_init();
   power_controlling_init_adc();
+  keys_init();
   
-  display_clear();
+  display_full_clear();
+  menu_main_init();
   
-  //display_draw_string("TEST - 1234", 0, 0, FONT_SIZE_8, 0);
-  
-  //display_draw_string("TEST - 1234", 0, 12, FONT_SIZE_11, 0);
-  
-  display_draw_string("TEST - 1234", 0, 40, FONT_SIZE_6, 0);
-  
-  display_update();
-  
-  
-  
-  uint16_t counter = 0;
   while (1)
   {
-    char tmp_str[32];
-    //sprintf(tmp_str, "TEST-%d", counter);
-    
-    adc_capture_start();
-    while (adc_capture_status != CAPTURE_DONE) {}
-    power_controlling_meas_battery_voltage();
-    
-    sprintf(tmp_str, "BATT=%.2f V\n", battery_voltage);
-    display_draw_string(tmp_str, 0, 0, FONT_SIZE_8, 0);
-    
-    sprintf(tmp_str, "ADC1-%d    ", adc_raw_buffer0[0]);
-    display_draw_string(tmp_str, 0, 12, FONT_SIZE_11, 0);
-    
-    sprintf(tmp_str, "ADC2-%d    ", adc_raw_buffer0[1]);
-    display_draw_string(tmp_str, 0, 24, FONT_SIZE_11, 0);
-    
-    sprintf(tmp_str, "TIME-%d    ", ms_tick);
-    display_draw_string(tmp_str, 0, 36, FONT_SIZE_8, 0);
-    
-    
-    display_update();
-    counter++;
-    
-    if (ms_tick > 10000)
+    if (TIMER_ELAPSED(timer_1ms))
     {
-      power_controlling_enter_sleep();
+      START_TIMER(timer_1ms, 1);
+      key_handling();
+    }
+    
+    if (TIMER_ELAPSED(timer_10ms))
+    {
+      START_TIMER(timer_10ms, 10);
+      
+      power_controlling_handler();
+      menu_redraw_display(MENU_MODE_PARTIAL_REDRAW);
+      data_processing_handler();
     }
   }
 }

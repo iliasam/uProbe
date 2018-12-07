@@ -47,6 +47,14 @@ void generator_timer_init(void)
   TIM_Cmd(GENERATOR_TIMER, ENABLE);
 }
 
+void generator_timer_start(void)
+{
+  TIM_Cmd(GENERATOR_TIMER, DISABLE);
+  GENERATOR_TIMER->CNT = 0;
+  TIM_Cmd(GENERATOR_TIMER, ENABLE);
+}
+
+
 //Configure termer pin as PWM out
 void generator_timer_activate_gpio(void)
 {

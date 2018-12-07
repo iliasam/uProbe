@@ -50,20 +50,27 @@ void hardware_init_rcc(void)
 //Init DWT counter
 void hardware_dwt_init(void)
 {
-  if (!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk))
-  {
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-  }
 }
 
 //OPAMP2 for ADC2
 void hardware_opamp_init(void)
 {
   OPAMP_InitTypeDef       OPAMP_InitStructure;
+  GPIO_InitTypeDef GPIO_InitStructure;
   
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+  
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_InitStructure.GPIO_Pin = ADC_OPAMP_POS_PIN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(ADC_OPAMP_POS_GPIO, &GPIO_InitStructure);
+  
+  GPIO_InitStructure.GPIO_Pin = COMP_PIN;
+  GPIO_Init(COMP_GPIO, &GPIO_InitStructure);
   
   OPAMP_DeInit(ADC_OPAMP_NAME);
   OPAMP_InitStructure.OPAMP_NonInvertingInput = ADC_OPAMP_POS_INPUT;

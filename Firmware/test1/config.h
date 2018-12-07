@@ -45,16 +45,25 @@
 
 #define ADC_TIMER               TIM1
 
-#define ADC_TIMER_PERIOD        100  //72M/12 = 6mhz
+#define ADC_TIMER_PERIOD        1000  //72M/12 = 6mhz
 
 // ADC ************************************************************************
 
 #define ADC_SAMPLING_TIME       ADC_SampleTime_1Cycles5
+//#define ADC_SAMPLING_TIME       ADC_SampleTime_181Cycles5
 
 //Divided signal from probe -> ADC1
+
 #define ADC_MAIN_IN_GPIO        GPIOA
 #define ADC_MAIN_IN_PIN         GPIO_Pin_2
 #define ADC_MAIN_IN_CHANNEL     ADC_Channel_3
+
+/*
+//test - button2
+#define ADC_MAIN_IN_GPIO        GPIOA
+#define ADC_MAIN_IN_PIN         GPIO_Pin_3
+#define ADC_MAIN_IN_CHANNEL     ADC_Channel_4
+*/
 
 //Divided and amplified signal from probe -> ADC2
 #define ADC_OPAMP_IN_GPIO       GPIOA
@@ -65,6 +74,9 @@
 #define ADC_OPAMP_NAME          OPAMP_Selection_OPAMP2
 #define ADC_OPAMP_GAIN          OPAMP_OPAMP_PGAGain_8
 #define ADC_OPAMP_POS_INPUT     OPAMP_NonInvertingInput_IO4//PA7 for OPAMP2
+
+#define ADC_OPAMP_POS_PIN       GPIO_Pin_7
+#define ADC_OPAMP_POS_GPIO      GPIOA
 
 #define MCU_VREF                3.22f //There is some drop at RC-filter
 
@@ -92,6 +104,9 @@
 #define COMP_CAP_GPIO                   GPIOB
 #define COMP_CAP_PIN                    GPIO_Pin_11 //COMP6_INP
 
+#define COMP_GPIO                       GPIOB
+#define COMP_PIN                        GPIO_Pin_0 //COMP4_INP
+
 // POWER CONTROLLING **********************************************************
 #define BATTERY_ADC_GPIO                GPIOB
 #define BATTERY_ADC_PIN                 GPIO_Pin_12 //BAT_VOLT
@@ -103,6 +118,15 @@
 
 // Battery voltage divider coefficient
 #define BATTERY_DIV_VALUE               (2.0f)
+
+// BUTTON ********************************************************************
+// Lower button
+#define BUTTON1_GPIO                    GPIOA
+#define BUTTON1_PIN                     GPIO_Pin_0
+
+// Upper button
+#define BUTTON2_GPIO                    GPIOA
+#define BUTTON2_PIN                     GPIO_Pin_3
 
 
 

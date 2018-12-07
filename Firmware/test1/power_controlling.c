@@ -12,10 +12,21 @@
 
 #define BATTERY_ADC_MAX_VALUE   4095.0f
 
+// No activity time to go to standby mode
+#define POWER_CONTROLLING_STANDBY_TIME          (30000)
+
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 volatile uint16_t raw_batt_value = 0;
 volatile float battery_voltage = 0.0;
+
+extern volatile uint32_t ms_tick;
+
+// Event time timestamp
+uint32_t power_controlling_event_timestamp  = 0;
+
+uint32_t power_controlling_time_from_event;
+
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private functions ---------------------------------------------------------*/
@@ -62,6 +73,7 @@ void power_controlling_init_adc(void)
   
 }
 
+//Measure battery voltage
 void power_controlling_meas_battery_voltage(void)
 {
   GPIO_InitTypeDef GPIO_InitStructure;
@@ -108,23 +120,11 @@ void power_controlling_meas_battery_voltage(void)
   
 }
 
-//функция ухода в спящий режим
+//Go to STANDBY mode
 void power_controlling_enter_sleep(void)
 {
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
   dwt_delay_us(10);
-  /*
-  EXTI_Configuration(ENABLE);
-  
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-  
-  NVIC_InitTypeDef NVIC_InitStructure;
-  NVIC_InitStructure.NVIC_IRQChannel                    = RTCAlarm_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority  = 1;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority         = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd                 = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-  */
   
   PWR_WakeUpPinCmd(PWR_WakeUpPin_1, ENABLE);
   SysTick->CTRL = 0;// disable Systick
@@ -134,7 +134,26 @@ void power_controlling_enter_sleep(void)
   
   PWR_ClearFlag(PWR_FLAG_WU | PWR_FLAG_SB);//WU=WUF
   PWR_EnterSTANDBYMode();
+}
+
+// Some event was detected - reset "power_controlling_time_from_event" counter
+void power_controlling_event(void)
+{
+  power_controlling_event_timestamp = ms_tick;
+}
+
+void power_controlling_handler(void)
+{
+  power_controlling_time_from_event = ms_tick - power_controlling_event_timestamp;
   
+  //Do not sleep in debug mode
+  if (power_controlling_is_debug() != 0)
+    power_controlling_event();
+  
+  if (power_controlling_time_from_event > POWER_CONTROLLING_STANDBY_TIME)
+  {
+    power_controlling_enter_sleep();
+  }
 }
 
 

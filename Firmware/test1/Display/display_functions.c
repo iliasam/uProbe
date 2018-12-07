@@ -7,6 +7,7 @@ uint16_t display_cursor_text_y = 0;
 void display_draw_char_size8(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_t flags);
 void display_draw_char_size6(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_t flags);
 void display_draw_char_size11(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_t flags);
+void display_draw_char_size22(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_t flags);
 
 
 uint8_t display_framebuffer[DISPLAY_WIDTH*DISPLAY_HEIGHT / 8];
@@ -122,6 +123,11 @@ void display_draw_char(uint8_t chr, uint16_t x, uint16_t y, uint8_t font_size, u
       display_draw_char_size11(chr, x, y, flags);
       break;
     }
+    case FONT_SIZE_22:
+    {
+      display_draw_char_size22(chr, x, y, flags);
+      break;
+    }
   }
 }
 
@@ -195,7 +201,8 @@ void display_draw_char_size11(uint8_t chr, uint16_t x_start, uint16_t y_start, u
   if (chr >= 32 && chr <= 128)
   {
     chr = chr - 32;
-  } 
+  }
+  
   
   for (x_pos = 0; x_pos < (FONT_SIZE_11_WIDTH - 1); x_pos++)
   {
@@ -207,6 +214,36 @@ void display_draw_char_size11(uint8_t chr, uint16_t x_start, uint16_t y_start, u
         display_reset_pixel(x_start + x_pos, y_start + y_pos);
     }
   }
+}
+
+//x, y - size in pixel
+void display_draw_char_size22(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_t flags)
+{
+  uint16_t x_pos, y_pos;
+  
+  //decoding symbol
+  if (chr >= 32 && chr <= 128)
+  {
+    chr = chr - 32;
+  }
+  
+  uint16_t start = chr * FONT_SIZE_22 * 2;
+  
+  for (y_pos = 0; y_pos < (FONT_SIZE_22 - 1); y_pos++)
+  {
+    uint16_t line_num = start + y_pos*2;
+    uint16_t hor_line = (uint16_t)display_font_size22[line_num + 1] | ((uint16_t)display_font_size22[line_num] << 8);
+    //uint16_t hor_line = ((uint16_t*)display_font_size22)[start + y_pos];
+    for (x_pos = 0; x_pos < (FONT_SIZE_22_WIDTH - 1); x_pos++)
+    {
+      if (hor_line & (1 << (FONT_SIZE_22_WIDTH - x_pos - 1)))
+        display_set_pixel(x_start + x_pos, y_start + y_pos);
+      else
+        display_reset_pixel(x_start + x_pos, y_start + y_pos);
+    }
+  }
+  
+
 }
 
 //Draw black bar
@@ -238,6 +275,7 @@ uint16_t get_font_width(uint8_t font)
     case FONT_SIZE_6:  return FONT_SIZE_6_WIDTH;
     case FONT_SIZE_8:  return FONT_SIZE_8_WIDTH;
     case FONT_SIZE_11: return FONT_SIZE_11_WIDTH;
+    case FONT_SIZE_22: return FONT_SIZE_22_WIDTH;
     default: return 5;
   }
 }

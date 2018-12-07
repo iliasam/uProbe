@@ -3,7 +3,7 @@
 #include "config.h"
 
 #include "stm32f30x.h"
-#include "adc_control.h"
+#include "adc_controlling.h"
 #include "hardware.h"
 
 #include "stm32f30x_gpio.h"
@@ -37,7 +37,7 @@ void adc_init_all(void)
   adc_dma_init();
 }
 
-
+//ADC DMA interrupts
 void DMA1_Channel1_IRQHandler(void)
 {
   ADC_TIMER->CR1 &= (uint16_t)~TIM_CR1_CEN;//stop timer
@@ -50,22 +50,6 @@ void DMA1_Channel1_IRQHandler(void)
     adc_capture_status = CAPTURE_DONE;
   }
 }
-
-/*
-//переключает буферы захавта ацп
-//вызывается из обработчика прерывания TIM16 - перед началом новгого захвата
-void set_adc_buf(void)
-{
-  if ((cap_number & 1) == 1) //нечетные изображения в 0 буфер
-  {
-    data_write_adc_ptr = &adc_raw_buffer0[0];
-  }
-  else //четные изображения в 1 буфер
-  {
-    data_write_adc_ptr = &line_buffer1[0];
-  }
-}
-*/
 
 
 // Configure DMA and start timer
@@ -101,14 +85,24 @@ void adc_start_trigger_timer(void)
   TIM_Cmd(ADC_TIMER, ENABLE);
 }
 
+//Set trigger timer frequency - Hz
+void adc_set_sample_rate(uint32_t frequency)
+{
+  uint32_t period = SystemCoreClock / frequency;
+  if (period > 0xFFFF)
+  {
+    while(1) {};//unexpected error
+  }
+  TIM_SetAutoreload(ADC_TIMER, (period - 1));
+}
+
 
 //ADC trigger timer
 void adc_trigger_timer_init(void)
 {
-  RCC_APB2PeriphClockCmd(ADC_TIMER_CLK, ENABLE);//APB2 = HCLK
+  RCC_APB2PeriphClockCmd(ADC_TIMER_CLK, ENABLE);//APB2 = HCLK = 32 Mhz
 
   TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-  TIM_OCInitTypeDef TIM_OCInitStructure;
 
   TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
 
@@ -135,15 +129,15 @@ void adc_init(void)
 
   RCC_ADCCLKConfig(RCC_ADC12PLLCLK_Div1);
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_ADC12, ENABLE);
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
   
   // Configure ADC Channel 12 pin as analog input
   GPIO_StructInit(&GPIO_InitStructure);
-  GPIO_InitStructure.GPIO_Pin = ADC_MAIN_IN_PIN;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
+  GPIO_InitStructure.GPIO_Pin = ADC_MAIN_IN_PIN;
   GPIO_Init(ADC_MAIN_IN_GPIO, &GPIO_InitStructure);
   GPIO_InitStructure.GPIO_Pin = ADC_OPAMP_IN_PIN;
   GPIO_Init(ADC_OPAMP_IN_GPIO, &GPIO_InitStructure);
@@ -207,6 +201,8 @@ void adc_dma_init(void)
 {
   DMA_InitTypeDef DMA_InitStructure;
   NVIC_InitTypeDef      NVIC_InitStructure;
+  
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
                 
   DMA_DeInit(DMA1_Channel1);//master
   DMA_StructInit(&DMA_InitStructure);

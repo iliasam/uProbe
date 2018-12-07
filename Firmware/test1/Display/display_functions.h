@@ -21,6 +21,9 @@
 #define FONT_SIZE_11            12//7*11
 #define FONT_SIZE_11_WIDTH      8//7*11
 
+#define FONT_SIZE_22            22
+#define FONT_SIZE_22_WIDTH      16
+
 #define LCD_NEW_LINE_FLAG       1//jump to new line
 #define LCD_INVERTED_FLAG       2//inverted draw
 

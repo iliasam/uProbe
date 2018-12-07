@@ -38,7 +38,16 @@ void dac_init(void)
 
 void comparator_init(void)
 {
-
+  GPIO_InitTypeDef GPIO_InitStructure;
+  
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+  GPIO_InitStructure.GPIO_Pin = COMP_CAP_PIN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(COMP_CAP_GPIO, &GPIO_InitStructure);
+  
+  GPIO_InitStructure.GPIO_Pin = COMP_PIN;
+  GPIO_Init(COMP_GPIO, &GPIO_InitStructure);
 }
 
 void comparator_switch_to_filter(void)
