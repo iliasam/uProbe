@@ -80,6 +80,12 @@
 
 #define MCU_VREF                3.22f //There is some drop at RC-filter
 
+// Input division coefficient - default value
+#define ADC_MAIN_DIVIDER        (10.455f * 1.015f)
+
+// Input division coefficient - default value
+#define ADC_MAIN_AMP_DIVIDER    (ADC_MAIN_DIVIDER / 8.176f)
+
 // GENERATOR TIMER ************************************************************
 // Timer used to generate test signal
 #define GENERATOR_TIMER_CLK             RCC_APB1Periph_TIM3

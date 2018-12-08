@@ -30,6 +30,7 @@ typedef enum
 /* Exported functions ------------------------------------------------------- */
 extern data_processing_state_t data_processing_state;
 extern signal_state_t logic_probe_signal_state;
+extern float voltmeter_voltage;
 
 void data_processing_main_mode_changed(void);
 void data_processing_handler(void);

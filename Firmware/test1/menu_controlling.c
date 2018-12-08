@@ -3,6 +3,7 @@
 #include "display_functions.h"
 #include "data_processing.h"
 #include "string.h"
+#include "stdio.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -14,6 +15,7 @@ menu_mode_t main_menu_mode = MENU_MODE_LOGIC_PROBE;
 /* Private function prototypes -----------------------------------------------*/
 void menu_main_switch_to_next_mode(void);
 void menu_draw_logic_probe_menu(menu_draw_type_t draw_type);
+void menu_draw_voltmeter_menu(menu_draw_type_t draw_type);
 
 void draw_not_supportd(void);//to delete
 
@@ -53,6 +55,10 @@ void menu_redraw_display(menu_draw_type_t draw_type)
       menu_draw_logic_probe_menu(draw_type);
     break;
     
+    case MENU_MODE_VOLTMETER:
+      menu_draw_voltmeter_menu(draw_type);
+    break;
+    
     default: 
       draw_not_supportd();
       break;
@@ -83,8 +89,6 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
       return;
     }
     
-    
-    //if (data_processing_state == PROCESSING_DATA_DONE)
     if (data_processing_state != PROCESSING_IDLE)
     {
       switch (logic_probe_signal_state)
@@ -106,11 +110,44 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
         break;
       default: break;
       }
-      
-      
+
       display_update();
       
     }
+  }
+}
+
+//*****************************************************************************
+void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
+{
+if (draw_type == MENU_MODE_FULL_REDRAW)
+  {
+    display_clear_framebuffer();
+    display_draw_string("   VOLTMETER MODE", 0, 0, FONT_SIZE_8, 0);
+    display_update();
+  }
+  else //PARTIAL update
+  {
+    if (data_processing_state == PROCESSING_DATA_DONE)
+    {
+      data_processing_start_new_capture();
+      return;
+    }
+    
+    if (data_processing_state != PROCESSING_IDLE)
+    {
+      char tmp_str[32];
+      if (voltmeter_voltage < 10.0f)
+        sprintf(tmp_str, "  %.02fV", voltmeter_voltage);
+      else
+        sprintf(tmp_str, " %.02fV", voltmeter_voltage);
+      
+      display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0);
+      display_update();
+    }
+    
+    //voltmeter_voltage
+    
   }
 }
 
