@@ -1,6 +1,9 @@
 #include "SSD1315.h"
 
-unsigned char display_X = 0, display_Y = 0; //	Две глобальные переменные расположения курсора
+uint8_t display_x = 0;
+uint8_t display_y = 0;
+
+void display_spi_init(void);
 
 // Initialize display pins
 void display_init_pins(void)
@@ -31,6 +34,8 @@ void display_init_pins(void)
   
   GPIO_InitStructure.GPIO_Pin = DISPLAY_PWR_N_PIN;
   GPIO_Init(DISPLAY_PWR_N_GPIO, &GPIO_InitStructure);
+  
+  display_spi_init();
   
   display_enable_power();
 }
@@ -66,23 +71,22 @@ void display_disable_power(void)
 }
 
 
-// задержка
+// Delay
 void display_delay(unsigned long p) 
 {
   unsigned long i;
-  for (i = 0; i < p; i++)
-    ;
+  for (i = 0; i < p; i++) {}
 }
 
-// отправить данные на дисплей
+// Send data to te display
 void display_write_data(unsigned char dat) 
 {
-  uint8_t i;
   DISP_CSN_SET_LOW;
   DISP_DC_SET_HIGH;
   display_delay(2);
   
-  for (i = 0; i < 8; i++) 
+  /*
+  for (uint8_t i = 0; i < 8; i++) 
   {
     GPIO_ResetBits(DISPLAY_CLK_GPIO, DISPLAY_CLK_PIN);
     display_delay(2);
@@ -95,20 +99,24 @@ void display_write_data(unsigned char dat)
     display_delay(2);
     dat = dat << 1;
   }
+  */
+  SPI_SendData8(DISPLAY_SPI_NAME, dat);
+  while(SPI_I2S_GetFlagStatus(DISPLAY_SPI_NAME, SPI_I2S_FLAG_BSY) == SET) {}
+  
   display_delay(2);
   DISP_CSN_SET_HIGH;
   display_delay(2);
 }
 
-//	отправить команду на дисплей
+// Send command to display
 void display_write_cmd(unsigned char cmd) 
 {
-  uint8_t i;
   DISP_CSN_SET_LOW;
   DISP_DC_SET_LOW;
   display_delay(2);
   
-  for (i = 0; i < 8; i++) 
+  /*
+  for (uint8_t i = 0; i < 8; i++) 
   {
     GPIO_ResetBits(DISPLAY_CLK_GPIO, DISPLAY_CLK_PIN);
     display_delay(2);
@@ -121,6 +129,10 @@ void display_write_cmd(unsigned char cmd)
     display_delay(2);
     cmd = cmd << 1;
   }
+  */
+  SPI_SendData8(DISPLAY_SPI_NAME, cmd);
+  while(SPI_I2S_GetFlagStatus(DISPLAY_SPI_NAME, SPI_I2S_FLAG_BSY) == SET) {}
+  
   display_delay(2);
   DISP_CSN_SET_HIGH;
   display_delay(2);
@@ -220,8 +232,8 @@ void display_init(void)
   
   display_delay(100000);
 
-  display_X = 0;
-  display_Y = 0;
+  display_x = 0;
+  display_y = 0;
 }
 
 // Clear display
@@ -241,12 +253,11 @@ void display_clear(void)
   }
 }
 
-// Установка курсора
-// Input : x,y - координаты символа
+// Set cursor position
 void display_gotoxy(unsigned char x, unsigned char y) 
 {
-  display_X = x;
-  display_Y = y;
+  display_x = x;
+  display_y = y;
 #if (INVERT_MODE==1)
   x++;
 #endif
@@ -272,4 +283,40 @@ void display_send_full_framebuffer(uint8_t* data)
       display_write_data(data[data_counter++]);
     }
   }
+}
+
+//Init SPI for display communication
+void display_spi_init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  SPI_InitTypeDef  SPI_InitStructure;
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);
+  
+  //Common
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_Level_3;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+  
+  GPIO_InitStructure.GPIO_Pin = DISPLAY_CLK_PIN;
+  GPIO_Init(DISPLAY_CLK_GPIO, &GPIO_InitStructure);
+  
+  GPIO_InitStructure.GPIO_Pin = DISPLAY_MOSI_PIN;
+  GPIO_Init(DISPLAY_MOSI_GPIO, &GPIO_InitStructure);
+  
+  GPIO_PinAFConfig(DISPLAY_CLK_GPIO, DISPLAY_CLK_SRC, DISPLAY_CLK_AFIO);
+  GPIO_PinAFConfig(DISPLAY_MOSI_GPIO, DISPLAY_MOSI_SRC, DISPLAY_MOSI_AFIO);
+  
+  SPI_I2S_DeInit(DISPLAY_SPI_NAME);
+  SPI_StructInit(&SPI_InitStructure);
+  SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+  SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
+  SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
+  SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+  SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
+  SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
+  SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
+  SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
+  SPI_Init(DISPLAY_SPI_NAME, &SPI_InitStructure);
+  
+  SPI_Cmd(DISPLAY_SPI_NAME, ENABLE);
 }

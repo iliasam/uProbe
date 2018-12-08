@@ -38,13 +38,8 @@ int main(void)
   display_init();
   dac_init();
   adc_init_all();
-  generator_timer_init();//<<
+  generator_timer_init();
   
-  //generator_timer_activate_gpio();
-  //generator_timer_set_high_gpio();
-  
-  
-  //comparator_switch_to_filter();
   comparator_init();
   power_controlling_init_adc();
   keys_init();

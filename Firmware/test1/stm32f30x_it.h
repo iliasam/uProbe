@@ -40,6 +40,7 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
+extern volatile uint32_t ms_tick;
 
 void NMI_Handler(void);
 void HardFault_Handler(void);

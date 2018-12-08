@@ -15,6 +15,8 @@
 
 // DISPLAY ********************************************************************
 
+#define DISPLAY_SPI_NAME        SPI2
+
 // Display power - active low
 #define DISPLAY_PWR_N_GPIO      GPIOA
 #define DISPLAY_PWR_N_PIN       GPIO_Pin_8
@@ -34,10 +36,14 @@
 // SPI CLK
 #define DISPLAY_CLK_GPIO        GPIOB
 #define DISPLAY_CLK_PIN         GPIO_Pin_13
+#define DISPLAY_CLK_SRC         GPIO_PinSource13
+#define DISPLAY_CLK_AFIO        GPIO_AF_5
 
 // SPI MOSI
 #define DISPLAY_MOSI_GPIO       GPIOB
 #define DISPLAY_MOSI_PIN        GPIO_Pin_15
+#define DISPLAY_MOSI_SRC        GPIO_PinSource15
+#define DISPLAY_MOSI_AFIO       GPIO_AF_5
 
 // ADC TIMER ******************************************************************
 // Timer used to trigger ADC1 and ADC2

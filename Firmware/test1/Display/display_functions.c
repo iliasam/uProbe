@@ -1,16 +1,24 @@
 //Special framebuffer wrapper used for basic operations - text drawing
+
+/* Includes ------------------------------------------------------------------*/
 #include "display_functions.h"
 
+/* Private variables ---------------------------------------------------------*/
 uint16_t display_cursor_text_x = 0;
 uint16_t display_cursor_text_y = 0;
+uint8_t display_framebuffer[DISPLAY_WIDTH*DISPLAY_HEIGHT / 8];
 
+volatile uint32_t display_update_time = 0;
+
+extern volatile uint32_t ms_tick;
+
+/* Private function prototypes -----------------------------------------------*/
 void display_draw_char_size8(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_t flags);
 void display_draw_char_size6(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_t flags);
 void display_draw_char_size11(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_t flags);
 void display_draw_char_size22(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_t flags);
 
-
-uint8_t display_framebuffer[DISPLAY_WIDTH*DISPLAY_HEIGHT / 8];
+/* Private functions ---------------------------------------------------------*/
 
 void display_set_pixel(uint16_t x, uint16_t y)
 {
@@ -63,7 +71,9 @@ void display_set_cursor_pos(uint16_t x, uint16_t y)
 
 void display_update(void)
 {
+  uint32_t start_time = ms_tick;
   display_send_full_framebuffer(display_framebuffer);
+  display_update_time = ms_tick - start_time;
 }
 
 //x, y - in pixel
@@ -77,7 +87,7 @@ uint16_t display_draw_string(char *s, uint16_t x, uint16_t y, uint8_t font_size,
   
   while (chr && (chr_pos < 50)) 
   {
-    display_draw_char(chr, x + chr_pos*width, y, font_size, flags);
+    display_draw_char(chr, x + chr_pos * width, y, font_size, flags);
     chr_pos++;
     chr = s[chr_pos];
   }
