@@ -16,6 +16,7 @@ menu_mode_t main_menu_mode = MENU_MODE_LOGIC_PROBE;
 void menu_main_switch_to_next_mode(void);
 void menu_draw_logic_probe_menu(menu_draw_type_t draw_type);
 void menu_draw_voltmeter_menu(menu_draw_type_t draw_type);
+void menu_print_current_voltage(char* str);
 
 void draw_not_supportd(void);//to delete
 
@@ -89,6 +90,7 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
       return;
     }
     
+    char tmp_str[32];
     if (data_processing_state != PROCESSING_IDLE)
     {
       switch (logic_probe_signal_state)
@@ -109,6 +111,19 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
         display_draw_string("UNKNOWN", 0, 20, FONT_SIZE_22, 0);
         break;
       default: break;
+      }
+      
+      //Draw voltage when input voltage is stable
+      if ((logic_probe_signal_state == SIGNAL_TYPE_LOW_STATE) || 
+          (logic_probe_signal_state == SIGNAL_TYPE_HIGH_STATE) ||
+          (logic_probe_signal_state == SIGNAL_TYPE_UNKOWN_STATE))
+      {
+        menu_print_current_voltage(tmp_str);
+        display_draw_string(tmp_str, 20, 46, FONT_SIZE_11, 0);
+      }
+      else
+      {
+        display_draw_string("        ", 20, 46, FONT_SIZE_11, 0);
       }
 
       display_update();
@@ -137,11 +152,7 @@ if (draw_type == MENU_MODE_FULL_REDRAW)
     if (data_processing_state != PROCESSING_IDLE)
     {
       char tmp_str[32];
-      if (voltmeter_voltage < 10.0f)
-        sprintf(tmp_str, "  %.02fV", voltmeter_voltage);
-      else
-        sprintf(tmp_str, " %.02fV", voltmeter_voltage);
-      
+      menu_print_current_voltage(tmp_str);
       display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0);
       display_update();
     }
@@ -149,6 +160,14 @@ if (draw_type == MENU_MODE_FULL_REDRAW)
     //voltmeter_voltage
     
   }
+}
+
+void menu_print_current_voltage(char* str)
+{
+  if (voltmeter_voltage < 10.0f)
+    sprintf(str, "  %.02fV", voltmeter_voltage);
+  else
+    sprintf(str, " %.02fV", voltmeter_voltage);
 }
 
     /*

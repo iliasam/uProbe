@@ -215,11 +215,20 @@ void data_processing_process_logic_probe_data(void)
   {
     //Signal is stable all the time - mean strong external signal
     if (logic_probe_results[0] > DATA_PROC_LOGIC_PROBE_HIGH_STATE_THRESHOLD)
+    {
       logic_probe_signal_state = SIGNAL_TYPE_HIGH_STATE;
+      data_processing_process_voltmeter_data();
+    }
     else if (logic_probe_results[0] < DATA_PROC_LOGIC_PROBE_LOW_STATE_THRESHOLD)
+    {
       logic_probe_signal_state = SIGNAL_TYPE_LOW_STATE;
+      data_processing_process_voltmeter_data();
+    }
     else
+    {
       logic_probe_signal_state = SIGNAL_TYPE_UNKOWN_STATE;
+      data_processing_process_voltmeter_data();
+    }
   }
   else
   {
