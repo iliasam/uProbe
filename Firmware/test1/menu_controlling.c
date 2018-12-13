@@ -17,6 +17,7 @@ void menu_main_switch_to_next_mode(void);
 void menu_draw_logic_probe_menu(menu_draw_type_t draw_type);
 void menu_draw_voltmeter_menu(menu_draw_type_t draw_type);
 void menu_print_current_voltage(char* str);
+void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type);
 
 void draw_not_supportd(void);//to delete
 
@@ -58,6 +59,10 @@ void menu_redraw_display(menu_draw_type_t draw_type)
     
     case MENU_MODE_VOLTMETER:
       menu_draw_voltmeter_menu(draw_type);
+    break;
+    
+    case MENU_MODE_FREQUENCY_METER:
+      menu_draw_frequency_meter_menu(draw_type);
     break;
     
     default: 
@@ -135,7 +140,7 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
 //*****************************************************************************
 void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
 {
-if (draw_type == MENU_MODE_FULL_REDRAW)
+  if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
     display_draw_string("   VOLTMETER MODE", 0, 0, FONT_SIZE_8, 0);
@@ -161,6 +166,22 @@ if (draw_type == MENU_MODE_FULL_REDRAW)
     
   }
 }
+
+//*****************************************************************************
+void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
+{
+  if (draw_type == MENU_MODE_FULL_REDRAW)
+  {
+    display_clear_framebuffer();
+    display_draw_string("FREQUENCY MEASURE", 0, 0, FONT_SIZE_8, 0);
+    display_update();
+  }
+  else //PARTIAL update
+  {
+  }
+}
+
+//*****************************************************************************
 
 void menu_print_current_voltage(char* str)
 {

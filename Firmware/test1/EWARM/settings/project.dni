@@ -13,7 +13,7 @@ CStepIntDis=_ 0
 stlinkserialNo=BBAD2C26
 stlinkfoundProbes=
 [DebugChecksum]
-Checksum=835969478
+Checksum=-151049300
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -100,7 +100,8 @@ ShowTiming=1
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Count=0
+Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\SignalCapture\comparator_handling.c}.98.3" 0 0 1 "" 0 "" 0
+Count=1
 [Aliases]
 Count=0
 SuppressDialog=0

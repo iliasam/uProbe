@@ -13,6 +13,7 @@
 void dac_init(void);
 void comparator_init(void);
 void comparator_switch_to_filter(void);
+void comparator_start_timer(void);
 
 
 #endif /* __COMPARATOR_HANDLING_H */

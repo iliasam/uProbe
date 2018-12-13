@@ -82,6 +82,7 @@ uint16_t data_processing_calc_adc_average(uint16_t* adc_buffer, uint16_t length)
 void data_processing_voltmeter_handler(void);
 void data_processing_process_voltmeter_data(void);
 uint16_t data_processing_volt_to_points(float voltage);
+void data_processing_frequency_meter_handler(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -149,6 +150,8 @@ void data_processing_handler(void)
     case MENU_MODE_VOLTMETER:
       data_processing_voltmeter_handler();
     break;
+    
+      
     
     default: break;
   }

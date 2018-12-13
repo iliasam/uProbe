@@ -119,6 +119,20 @@
 #define COMP_GPIO                       GPIOB
 #define COMP_PIN                        GPIO_Pin_0 //COMP4_INP
 
+//Main comparator - connected directly to the divider 
+#define COMP_MAIN_NAME                  COMP_Selection_COMP4
+
+#define COMP_MAIN_TIM_NAME              TIM4
+#define COMP_MAIN_TIM_CLK               RCC_APB1Periph_TIM4 //32 MHz
+#define COMP_MAIN_TIM_CH                TIM_Channel_2
+#define COMP_MAIN_TIM_CH_REG            CCR2
+#define COMP_MAIN_TIM_IRQ               TIM4_IRQn
+#define COMP_MAIN_TIM_IRQ_HANDLER       TIM4_IRQHandler
+
+#define COMP_MAIN_DMA_CH                DMA1_Channel4//TIM4_CH2
+#define COMP_MAIN_DMA_FLAG              DMA1_IT_TC4
+
+
 // POWER CONTROLLING **********************************************************
 #define BATTERY_ADC_GPIO                GPIOB
 #define BATTERY_ADC_PIN                 GPIO_Pin_12 //BAT_VOLT
