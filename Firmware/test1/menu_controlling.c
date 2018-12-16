@@ -2,6 +2,7 @@
 #include "menu_controlling.h"
 #include "display_functions.h"
 #include "data_processing.h"
+#include "comparator_handling.h"
 #include "string.h"
 #include "stdio.h"
 
@@ -18,6 +19,7 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type);
 void menu_draw_voltmeter_menu(menu_draw_type_t draw_type);
 void menu_print_current_voltage(char* str);
 void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type);
+void menu_print_current_frequency(char* str);
 
 void draw_not_supportd(void);//to delete
 
@@ -173,15 +175,42 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("FREQUENCY MEASURE", 0, 0, FONT_SIZE_8, 0);
+    display_draw_string(" FREQUENCY MEASURE", 0, 0, FONT_SIZE_8, 0);
     display_update();
   }
   else //PARTIAL update
   {
+    if (comp_processing_state == COMP_PROCESSING_DATA_DONE)
+    {
+      char tmp_str[32];
+      menu_print_current_frequency(tmp_str);
+      display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0);
+      
+      
+      sprintf(tmp_str, "LEVEL: %.02f V", comparator_threshold);
+      display_draw_string(tmp_str, 10, 50, FONT_SIZE_8, 0);
+      
+      display_update();
+      
+      comparator_start_freq_capture();
+    }
+    
   }
 }
 
 //*****************************************************************************
+
+void menu_print_current_frequency(char* str)
+{
+  if (comparator_calc_frequency > 1e6)
+    sprintf(str, "UNKNOWN");
+  else if (comparator_calc_frequency > 99999)
+    sprintf(str, "%d KHz", (comparator_calc_frequency / 1000));
+  else if (comparator_calc_frequency < 1000)
+    sprintf(str, " %d Hz    ", comparator_calc_frequency);
+  else
+    sprintf(str, "%dHz    ", comparator_calc_frequency);
+}
 
 void menu_print_current_voltage(char* str)
 {

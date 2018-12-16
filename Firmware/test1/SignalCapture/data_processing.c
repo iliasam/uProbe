@@ -4,6 +4,7 @@
 #include "data_processing.h"
 #include "adc_controlling.h"
 #include "generator_timer.h"
+#include "comparator_handling.h"
 #include "menu_controlling.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -23,7 +24,7 @@
 #define DATA_PROC_LOGIC_PROBE_START_OFFSET      (4)
 
 //in ADC1 points
-#define DATA_PROC_LOGIC_PROBE_BIG_DIFF_THRESHOLD 250
+#define DATA_PROC_LOGIC_PROBE_BIG_DIFF_THRESHOLD 130
 
 //in ADC1 points
 #define DATA_PROC_LOGIC_PROBE_LOW_DIFF_THRESHOLD 30
@@ -31,6 +32,9 @@
 //in ADC1 points
 #define DATA_PROC_LOGIC_PROBE_HIGH_STATE_THRESHOLD 260 //~2V
 #define DATA_PROC_LOGIC_PROBE_LOW_STATE_THRESHOLD  130 //~1V
+
+//If peak-peak voltage is bigger than this voltage that mean tha it is pulsed voltage
+#define DATA_PROC_LOGIC_PROBE_PEAK_THRESHOLD       0.5f //V
 
 #define DATA_PROC_LOGIC_PROBE_ANALYSE_LENGTH    \
  (DATA_PROC_LOGIC_PROBE_SAMPLE_HPERIOD - DATA_PROC_LOGIC_PROBE_START_OFFSET * 2) //start and end
@@ -83,6 +87,7 @@ void data_processing_voltmeter_handler(void);
 void data_processing_process_voltmeter_data(void);
 uint16_t data_processing_volt_to_points(float voltage);
 void data_processing_frequency_meter_handler(void);
+uint16_t data_processing_calc_peak_peak(uint16_t* adc_buffer, uint16_t length);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -151,7 +156,9 @@ void data_processing_handler(void)
       data_processing_voltmeter_handler();
     break;
     
-      
+    case MENU_MODE_FREQUENCY_METER:
+      comparator_processing_handler();
+    break;
     
     default: break;
   }
@@ -189,12 +196,26 @@ void data_processing_logic_probe_handler(void)
 void data_processing_process_logic_probe_data(void)
 {
   uint8_t i;
+  
+  uint16_t peak_threshold = 
+    data_processing_volt_to_points(DATA_PROC_LOGIC_PROBE_PEAK_THRESHOLD);
 
   for (i = 0; i < DATA_PROC_LOGIC_PROBE_HPERIODS_NUM; i++)
   {
     uint16_t start = (DATA_PROC_LOGIC_PROBE_SAMPLE_HPERIOD * i + DATA_PROC_LOGIC_PROBE_START_OFFSET) * 2;//adc1
+    
     logic_probe_results[i] = data_processing_calc_adc_average(
       (uint16_t*)&adc_raw_buffer0[start], DATA_PROC_LOGIC_PROBE_ANALYSE_LENGTH);
+    
+    //Calculate pulsation of voltage during HALF of period
+    uint16_t peak_result = data_processing_calc_peak_peak(
+      (uint16_t*)&adc_raw_buffer0[start], DATA_PROC_LOGIC_PROBE_ANALYSE_LENGTH);
+    
+    if (peak_result > peak_threshold)
+    {
+      logic_probe_signal_state = SIGNAL_TYPE_PULSED_STATE;
+      return;
+    }
   }
   
   int16_t diff_results[DATA_PROC_LOGIC_PROBE_HPERIODS_NUM / 2];
@@ -205,16 +226,18 @@ void data_processing_process_logic_probe_data(void)
   {
     diff_results[i/2] = logic_probe_results[i] - logic_probe_results[i + 1];
     
+    //Big difference mean that input is floating
     if (diff_results[i/2] > DATA_PROC_LOGIC_PROBE_BIG_DIFF_THRESHOLD)
       big_diff_cnt++;
     
+    //Small difference mean than input is stable
     if (diff_results[i/2] < DATA_PROC_LOGIC_PROBE_LOW_DIFF_THRESHOLD)
       low_diff_cnt++;
   }
   
   if (big_diff_cnt == (DATA_PROC_LOGIC_PROBE_HPERIODS_NUM / 2))
     logic_probe_signal_state = SIGNAL_TYPE_Z_STATE;
-  else if (low_diff_cnt == (DATA_PROC_LOGIC_PROBE_HPERIODS_NUM / 2))
+  else if (low_diff_cnt == (DATA_PROC_LOGIC_PROBE_HPERIODS_NUM / 2)) //satble input
   {
     //Signal is stable all the time - mean strong external signal
     if (logic_probe_results[0] > DATA_PROC_LOGIC_PROBE_HIGH_STATE_THRESHOLD)
@@ -235,7 +258,8 @@ void data_processing_process_logic_probe_data(void)
   }
   else
   {
-    logic_probe_signal_state = SIGNAL_TYPE_PULSED_STATE;
+    logic_probe_signal_state = SIGNAL_TYPE_UNKOWN_STATE;
+    data_processing_process_voltmeter_data();
   }
 }
 
@@ -316,6 +340,27 @@ uint16_t data_processing_calc_adc_average(uint16_t* adc_buffer, uint16_t length)
     summ+= adc_buffer[i];// data from two ADC's alternates
   }
   return (uint16_t)(summ / length);
+}
+
+// Calculate peak-peak value from RAW adc data
+// length - number of analysed points
+uint16_t data_processing_calc_peak_peak(uint16_t* adc_buffer, uint16_t length)
+{
+  uint16_t i;
+  if (length == 0)
+    return 0;
+  
+  uint16_t min = adc_buffer[0];
+  uint16_t max = adc_buffer[0];
+  
+  for (i = 0; i < (length * 2); i+= 2)
+  {
+    if (adc_buffer[i] > max)
+      max = adc_buffer[i];
+    if (adc_buffer[i] < min)
+      min = adc_buffer[i];
+  }
+  return max-min;
 }
 
 //Convert voltage (probe input 0 - 30V) to ADC1 points
