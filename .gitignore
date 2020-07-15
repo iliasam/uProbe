@@ -60,3 +60,4 @@ Firmware/test1/EWARM/STM32F303xC/Exe/
 Firmware/test1/EWARM/STM32F303xC/Obj/project.pbd.browse
 Firmware/test1/EWARM/STM32F303xC/Obj/project.pbd
 *.tmp
+Firmware/test1/EWARM/settings/
