@@ -1,3 +1,5 @@
+//DMA is working in Normal mode, not Circular
+
 
 /* Includes ------------------------------------------------------------------*/
 #include "config.h"
@@ -21,6 +23,9 @@ volatile uint16_t adc_raw_buffer0[ADC_BUFFER_SIZE];
 volatile uint16_t* data_write_adc_ptr = adc_raw_buffer0;
 
 volatile cap_status_type adc_capture_status = NO_CAPTURE;
+
+//Hz
+uint32_t adc_current_sample_rate = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void adc_dma_init(void);
@@ -93,6 +98,7 @@ void adc_set_sample_rate(uint32_t frequency)
   {
     while(1) {};//unexpected error
   }
+  adc_current_sample_rate = frequency;
   TIM_SetAutoreload(ADC_TIMER, (period - 1));
 }
 

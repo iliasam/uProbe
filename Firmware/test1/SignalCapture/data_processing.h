@@ -8,11 +8,11 @@
 
 /* Exported types ------------------------------------------------------------*/
 // Hz
-#define DATA_PROC_LOW_SAMPLE_RATE               (10000)
+#define DATA_PROC_LOW_SAMPLE_RATE               (uint32_t)(10000)
 
-#define DATA_PROC_SAMPLE_RATE_200K              (200000)
+#define DATA_PROC_SAMPLE_RATE_200K              (uint32_t)(200000)
 
-#define DATA_PROC_SAMPLE_RATE_2M                (2000000)
+#define DATA_PROC_SAMPLE_RATE_2M                (uint32_t)(2000000)
 
 // Number of sampled points to skip
 #define DATA_PROC_LOGIC_PROBE_START_OFFSET      (4)

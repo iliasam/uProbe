@@ -58,9 +58,6 @@
 /* Private variables ---------------------------------------------------------*/
 data_processing_state_t data_processing_state = PROCESSING_IDLE;
 
-//Hz
-uint32_t current_sample_rate = 0;
-
 // Odd items - high state of "generator timer", even - low state
 uint16_t logic_probe_results[DATA_PROC_LOGIC_PROBE_HPERIODS_NUM];
 
@@ -95,7 +92,6 @@ void data_processing_process_logic_probe_data(void);
 uint16_t data_processing_calc_adc_average(uint16_t* adc_buffer, uint16_t length);
 void data_processing_voltmeter_handler(void);
 void data_processing_process_voltmeter_data(void);
-void data_processing_frequency_meter_handler(void);
 uint16_t data_processing_calc_peak_peak(uint16_t* adc_buffer, uint16_t length);
 float data_processing_adc_to_voltage(uint16_t adc1, uint16_t adc2);
 uint16_t data_processing_calculate_edges(uint16_t* adc_buffer, uint16_t length, float threshold_v);
@@ -132,11 +128,11 @@ void data_processing_correct_raw_data(uint16_t zero_offset)
 //Return ADC1 zero offset in ADC points for current sample rate
 uint16_t data_processing_get_adc_offset(void)
 {
-  if (current_sample_rate == DATA_PROC_LOW_SAMPLE_RATE)
+  if (adc_current_sample_rate == DATA_PROC_LOW_SAMPLE_RATE)
     return 11;//todo
-  else if (current_sample_rate == DATA_PROC_SAMPLE_RATE_200K)
+  else if (adc_current_sample_rate == DATA_PROC_SAMPLE_RATE_200K)
     return 7;//todo
-  else if (current_sample_rate == DATA_PROC_SAMPLE_RATE_2M)
+  else if (adc_current_sample_rate == DATA_PROC_SAMPLE_RATE_2M)
     return 7;//todo
   
   return 0xFFFF;//error
@@ -151,7 +147,6 @@ void data_processing_main_mode_changed(void)
   if (main_menu_mode == MENU_MODE_LOGIC_PROBE)
   {
     adc_set_sample_rate(DATA_PROC_LOW_SAMPLE_RATE);
-    current_sample_rate = DATA_PROC_LOW_SAMPLE_RATE;
     generator_timer_activate_gpio();
   }
   else
@@ -162,18 +157,20 @@ void data_processing_main_mode_changed(void)
   if (main_menu_mode == MENU_MODE_VOLTMETER)
   {
     adc_set_sample_rate(DATA_PROC_LOW_SAMPLE_RATE);
-    current_sample_rate = DATA_PROC_LOW_SAMPLE_RATE;
   }
-  
-  if (main_menu_mode == MENU_MODE_FREQUENCY_METER)// used for trigger calibration
+  else if (main_menu_mode == MENU_MODE_FREQUENCY_METER)// used for trigger calibration
   {
     adc_set_sample_rate(DATA_PROC_LOW_SAMPLE_RATE);
-    current_sample_rate = DATA_PROC_LOW_SAMPLE_RATE;
+  }
+  else if (main_menu_mode == MENU_MODE_BAUD_METER)
+  {
+    adc_set_sample_rate(DATA_PROC_SAMPLE_RATE_200K);
   }
   
   //addition processing for SLOW_SCOPE mode
-  slow_scope_processing_main_mode_changed();  
+  slow_scope_processing_main_mode_changed();
   baud_meter_processing_main_mode_changed();
+  comparator_processing_main_mode_changed();
   data_processing_adc_calib_running = 0;//reset
 }
 
@@ -365,7 +362,6 @@ void data_processing_adc_calibraion_mode(void)
         //time to start ADC capture
         data_processing_adc_calib_state = ADC_CALIB_MEASURE1;
         adc_set_sample_rate(DATA_PROC_LOW_SAMPLE_RATE);
-        current_sample_rate = DATA_PROC_LOW_SAMPLE_RATE;
         adc_capture_start();
       }
     break;

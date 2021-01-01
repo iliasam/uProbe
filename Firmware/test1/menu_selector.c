@@ -290,14 +290,14 @@ void menu_selector_draw_adc_calib_menu(void)
 void menu_selector_draw_info_menu(void)
 {
   display_draw_string(" DEVICE INFO", 0, 0, FONT_SIZE_8, 0);
-  display_draw_string("FW VERSION: 1.0", 0, 12, FONT_SIZE_8, 0);
+  display_draw_string("FW VERSION: 1.1", 0, 12, FONT_SIZE_8, 0);
   
   char tmp_str[32];
   float bat_voltage = power_controlling_meas_battery_voltage();
   sprintf(tmp_str, "BATT VOLT: %.02f V", bat_voltage);
   display_draw_string(tmp_str, 0, 24, FONT_SIZE_8, 0);
   
-  display_draw_string("  by ILIASAM 2019", 0, 50, FONT_SIZE_8, 0);
+  display_draw_string(" by ILIASAM 2021", 0, 50, FONT_SIZE_8, 0);
 }
 
 //*****************************************************************************

@@ -18,6 +18,8 @@ typedef enum
   CAPTURE_DONE
 } cap_status_type;//image capture status
 
+extern uint32_t adc_current_sample_rate;
+
 void adc_init_all(void);
 
 void adc_capture_start(void);

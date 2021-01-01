@@ -128,6 +128,13 @@
 #define COMP_MAIN_TIM_CH_REG            CCR2
 #define COMP_MAIN_TIM_IRQ               TIM4_IRQn
 #define COMP_MAIN_TIM_IRQ_HANDLER       TIM4_IRQHandler
+#define COMP_MAIN_TIM_DMA_SRC           TIM_DMA_CC2
+
+
+#define COMP_MAIN_IRQ                   COMP4_5_6_IRQn
+//COMP4 is internally connected to EXTI Line 30
+#define COMP_MAIN_IRQ_EXTI_LINE         EXTI_Line30
+#define COMP_MAIN_EXTI_IRQ_HANDLER      COMP4_5_6_IRQHandler
 
 #define COMP_MAIN_DMA_CH                DMA1_Channel4//TIM4_CH2
 #define COMP_MAIN_DMA_FLAG              DMA1_IT_TC4

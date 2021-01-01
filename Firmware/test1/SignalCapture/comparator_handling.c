@@ -1,4 +1,6 @@
-
+// Timer is running with MCU clock
+// Comapator is generating capture events for the timer
+// Time values, measured by timer, are sent to the DMA
 
 /* Includes ------------------------------------------------------------------*/
 #include "comparator_handling.h"
@@ -49,12 +51,14 @@ comp_processing_state_t comp_processing_state = COMP_PROCESSING_IDLE;
 extern freq_meter_calib_state_t freq_meter_calib_state;
 extern data_processing_state_t data_processing_state;
 extern volatile uint16_t adc_raw_buffer0[ADC_BUFFER_SIZE];
+extern float data_processing_main_div;
+extern menu_mode_t main_menu_mode;
 
 //Flag is set in timer Update interrupt
 uint8_t comp_capture_done_flag = 0;
 
 //Comparator threshold voltage, V
-float comparator_threshold = FREQ_TRIGGER_DEFAULT_V;
+float comparator_threshold_v = FREQ_TRIGGER_DEFAULT_V;
 
 uint16_t comparator_timer_prescaler = COMP_TIMER_SLOW_PRECSALER;
 
@@ -69,14 +73,13 @@ uint16_t comparator_dma_events = 0;
 float comparator_min_voltage = 500.0f;
 float comparator_max_voltage = 0.0f;
 
-uint8_t freq_calibration_counter = 0;
+uint8_t comparator_freq_calibration_counter = 0;
 
-extern float data_processing_main_div;
+comp_interrupt_callback_t comparator_interrupt_callback_func = NULL;
 
 /* Private function prototypes -----------------------------------------------*/
 void comparator_set_threshold(float voltage);
 void comparator_timer_init(void);
-void COMP_MAIN_TIM_IRQ_HANDLER(void);
 void comparator_dma_init(void);
 void comparator_prepare_dma(void);
 uint8_t comparator_process_slow_data(void);
@@ -84,7 +87,34 @@ void comparator_process_fast_data(void);
 void comparator_start_dma(void);
 void comparator_freq_meter_trigger_handling(void);
 
+void COMP_MAIN_TIM_IRQ_HANDLER(void);
+void COMP_MAIN_EXTI_IRQ_HANDLER(void);
+
 /* Private functions ---------------------------------------------------------*/
+
+void COMP_MAIN_EXTI_IRQ_HANDLER(void)
+{
+  //if(EXTI_GetITStatus(COMP_MAIN_IRQ_EXTI_LINE) != RESET)
+  {
+    EXTI_ClearITPendingBit(COMP_MAIN_IRQ_EXTI_LINE);
+    COMP_Cmd(COMP_MAIN_NAME, DISABLE);
+    if (comparator_interrupt_callback_func != NULL)
+      comparator_interrupt_callback_func();
+  }
+}
+
+
+// This function must be called when "main_menu_mode" is changed
+// Switch capture mode
+void comparator_processing_main_mode_changed(void)
+{
+  if (main_menu_mode == MENU_MODE_FREQUENCY_METER)
+  {
+    comparator_init(0);
+    comparator_threshold_v = FREQ_TRIGGER_DEFAULT_V;
+  }
+}
+
 void COMP_MAIN_TIM_IRQ_HANDLER(void)
 {
   if (TIM_GetITStatus(COMP_MAIN_TIM_NAME, TIM_IT_Update) == SET)
@@ -98,7 +128,7 @@ void COMP_MAIN_TIM_IRQ_HANDLER(void)
   }
 }
 
-//DAC is used is NEG IN for comparator
+//DAC is used as NEG IN for comparator
 void dac_init(void)
 {
   GPIO_InitTypeDef GPIO_InitStructure;
@@ -120,13 +150,15 @@ void dac_init(void)
   
   DAC_Cmd(DAC_NAME, DAC_CHANNEL, ENABLE);
 
-  comparator_set_threshold(comparator_threshold);
+  comparator_set_threshold(comparator_threshold_v);
 }
 
-void comparator_init(void)
+void comparator_init(uint8_t interrupt_mode)
 {
   GPIO_InitTypeDef GPIO_InitStructure;
-  COMP_InitTypeDef    COMP_InitStructure;
+  COMP_InitTypeDef COMP_InitStructure;
+  EXTI_InitTypeDef EXTI_InitStructure;
+  
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
   
   GPIO_StructInit(&GPIO_InitStructure);
@@ -148,6 +180,29 @@ void comparator_init(void)
   COMP_Init(COMP_MAIN_NAME, &COMP_InitStructure);
   
   COMP_Cmd(COMP_MAIN_NAME, ENABLE);
+  
+  if (interrupt_mode)
+  {
+    DMA_Cmd(COMP_MAIN_DMA_CH, DISABLE);
+    TIM_Cmd(COMP_MAIN_TIM_NAME, DISABLE);
+    TIM_DMACmd(COMP_MAIN_TIM_NAME, COMP_MAIN_TIM_DMA_SRC, DISABLE);
+    COMP_Cmd(COMP_MAIN_NAME, DISABLE);
+    
+    EXTI_InitStructure.EXTI_Line = COMP_MAIN_IRQ_EXTI_LINE;
+    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+    EXTI_Init(&EXTI_InitStructure);
+  }
+  else
+  {
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannel = COMP_MAIN_IRQ;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+    NVIC_Init(&NVIC_InitStructure);
+  }
   
   comparator_timer_init();
   comparator_dma_init();
@@ -184,7 +239,7 @@ void comparator_timer_init(void)
   NVIC_Init(&NVIC_InitStructure);
   
   TIM_DMAConfig(COMP_MAIN_TIM_NAME, TIM_DMABase_CCR2, TIM_DMABurstLength_1Transfer);
-  TIM_DMACmd(COMP_MAIN_TIM_NAME, TIM_DMA_CC2, ENABLE); 
+  TIM_DMACmd(COMP_MAIN_TIM_NAME, COMP_MAIN_TIM_DMA_SRC, ENABLE); 
   //TIM_SelectCCDMA(COMP_MAIN_TIM_NAME, FunctionalState NewState)
 }
 
@@ -216,13 +271,12 @@ void comparator_start_timer(void)
   comp_capture_done_flag = 0;
   TIM_SetCounter(COMP_MAIN_TIM_NAME, 0);
   
-    TIM_PrescalerConfig(
+  TIM_PrescalerConfig(
     COMP_MAIN_TIM_NAME, 
     (comparator_timer_prescaler - 1), 
     //TIM_PSCReloadMode_Update);
     TIM_PSCReloadMode_Immediate);
     
- 
   TIM_ClearFlag(COMP_MAIN_TIM_NAME, TIM_FLAG_Update);
   TIM_ITConfig(COMP_MAIN_TIM_NAME, TIM_IT_Update, ENABLE);
   TIM_Cmd(COMP_MAIN_TIM_NAME, ENABLE);
@@ -283,7 +337,7 @@ void comparator_processing_handler(void)
   if (comp_processing_state == COMP_PROCESSING_IDLE)
   {
     //First try in slow mode
-    comparator_set_threshold(comparator_threshold);
+    comparator_set_threshold(comparator_threshold_v);
     comparator_timer_prescaler = COMP_TIMER_SLOW_PRECSALER;
     comparator_prepare_dma();
     comparator_start_timer();
@@ -349,7 +403,7 @@ void comparator_freq_meter_trigger_handling(void)
       {
         freq_meter_calib_state = FREQ_METER_CALIB_CAPTURE;//start capture
         data_processing_start_new_capture();
-        freq_calibration_counter = 0;
+        comparator_freq_calibration_counter = 0;
         comparator_min_voltage = 500.0f;
         comparator_max_voltage = 0.0f;
         menu_draw_frequency_meter_menu(MENU_MODE_FULL_REDRAW);
@@ -359,7 +413,7 @@ void comparator_freq_meter_trigger_handling(void)
     {
       if (data_processing_state == PROCESSING_DATA_DONE)//voltage measured
       {
-        freq_calibration_counter++;
+        comparator_freq_calibration_counter++;
         adc_processed_data_t tmp_result = data_processing_extended(
           (uint16_t*)&adc_raw_buffer0[FREQ_CALIB_START_OFFSET * 2], 
           (ADC_BUFFER_SIZE / 2 - FREQ_CALIB_START_OFFSET * 2));
@@ -369,14 +423,14 @@ void comparator_freq_meter_trigger_handling(void)
         if (tmp_result.max_voltage > comparator_max_voltage)
           comparator_max_voltage = tmp_result.max_voltage;
         
-        if (freq_calibration_counter > FREQ_CALIB_CYCLES_CNT)
+        if (comparator_freq_calibration_counter > FREQ_CALIB_CYCLES_CNT)
         {
           //Calculate trigger voltage
           float tmp_voltage = (comparator_min_voltage + comparator_max_voltage) / 2.0;
           if (tmp_voltage < FREQ_CALIB_MIN_VOLTAGE)
-            comparator_threshold = FREQ_TRIGGER_DEFAULT_V;
+            comparator_threshold_v = FREQ_TRIGGER_DEFAULT_V;
           else
-            comparator_threshold = tmp_voltage;
+            comparator_threshold_v = tmp_voltage;
           
           freq_meter_calib_state = FREQ_METER_CALIB_DONE;
           menu_draw_frequency_meter_menu(MENU_MODE_FULL_REDRAW);
@@ -467,6 +521,35 @@ void comparator_process_fast_data(void)
   period_summ =  period_summ / (comparator_dma_events - 2);
   
   comparator_calc_frequency = COMP_TIMER_FAST_FREQUENCY / period_summ;
+}
+
+void comparator_change_threshold_voltage(float value)
+{
+  if (value < 0.0f)
+    return;
+  comparator_threshold_v = value;
+}
+
+void comparator_start_wait_interrupt(comp_interrupt_callback_t callback_func)
+{
+  if (callback_func == NULL)
+    return;
+  comparator_interrupt_callback_func = callback_func;
+  
+  NVIC_InitTypeDef NVIC_InitStructure;
+  
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannel = COMP_MAIN_IRQ;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+  NVIC_Init(&NVIC_InitStructure);
+  
+  EXTI_ClearITPendingBit(COMP_MAIN_IRQ_EXTI_LINE);
+  COMP_Cmd(COMP_MAIN_NAME, ENABLE);
+  EXTI_ClearITPendingBit(COMP_MAIN_IRQ_EXTI_LINE);
+    
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
 }
 
 

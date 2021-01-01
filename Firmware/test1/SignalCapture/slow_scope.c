@@ -33,7 +33,6 @@
 extern menu_mode_t main_menu_mode;
 extern volatile cap_status_type adc_capture_status;
 extern volatile uint16_t adc_raw_buffer0[ADC_BUFFER_SIZE];
-extern uint32_t current_sample_rate;
 extern volatile uint32_t ms_tick;
 
 slow_scope_data_processing_state_t slow_scope_state = ADC_SLOW_IDLE;
@@ -86,7 +85,6 @@ void slow_scope_processing_main_mode_changed(void)
   if (main_menu_mode == MENU_MODE_SLOW_SCOPE)
   {
     adc_set_sample_rate(DATA_PROC_LOW_SAMPLE_RATE);
-    current_sample_rate = DATA_PROC_LOW_SAMPLE_RATE;
   }
 }
 

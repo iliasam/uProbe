@@ -44,7 +44,7 @@ int main(void)
   adc_init_all();
   generator_timer_init();
   power_controlling_init();
-  comparator_init();
+  comparator_init(0);
   keys_init();
   display_full_clear();
   menu_main_init();

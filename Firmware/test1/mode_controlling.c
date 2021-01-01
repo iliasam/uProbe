@@ -261,7 +261,7 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
       display_draw_string(tmp_str, 0, 22, FONT_SIZE_8, 0);
       sprintf(tmp_str, " MAX voltage: %.02fV", comparator_max_voltage);
       display_draw_string(tmp_str, 0, 32, FONT_SIZE_8, 0);
-      sprintf(tmp_str, " TRIGGR: %.02fV", comparator_threshold);
+      sprintf(tmp_str, " TRIGGR: %.02fV", comparator_threshold_v);
       display_draw_string(tmp_str, 0, 42, FONT_SIZE_8, 0);
     }
     
@@ -277,7 +277,7 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
         menu_print_current_frequency(tmp_str);
         display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0);
         
-        sprintf(tmp_str, "LEVEL: %.02f V", comparator_threshold);
+        sprintf(tmp_str, "LEVEL: %.02f V", comparator_threshold_v);
         display_draw_string(tmp_str, 10, 50, FONT_SIZE_8, 0);
         
         display_update();
@@ -316,7 +316,14 @@ void menu_baud_meter_menu(menu_draw_type_t draw_type)
       sprintf(tmp_str, "%d    ", baud_meter_current_rounded_baud);
     
     display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0);
-      display_update();
+    
+    if (baud_meter_is_in_fast_mode())
+      display_draw_string(" Fast mode", 0, 50, FONT_SIZE_8, 0);
+    else
+      display_draw_string("          ", 0, 50, FONT_SIZE_8, 0);
+      
+    
+    display_update();
   }
 }
 //*****************************************************************************

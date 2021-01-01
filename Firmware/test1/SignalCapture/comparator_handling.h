@@ -16,23 +16,29 @@ typedef enum
   COMP_PROCESSING_DATA_DONE
 } comp_processing_state_t;
 
+//Callback function - called when interrupt from comparator happens
+typedef void (*comp_interrupt_callback_t)(void);
+
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 extern uint32_t comparator_calc_frequency;
 extern comp_processing_state_t comp_processing_state;
-extern float comparator_threshold;
+extern float comparator_threshold_v;
 
 //Values calculated during trigger voltage calibration
 extern float comparator_min_voltage;
 extern float comparator_max_voltage;
 
 void dac_init(void);
-void comparator_init(void);
+void comparator_init(uint8_t interrupt_mode);
 void comparator_switch_to_filter(void);
 void comparator_start_timer(void);
 void comparator_processing_handler(void);
 void comparator_start_freq_capture(void);
+void comparator_processing_main_mode_changed(void);
+void comparator_change_threshold_voltage(float value);
+void comparator_start_wait_interrupt(comp_interrupt_callback_t callback_func);
 
 
 #endif /* __COMPARATOR_HANDLING_H */
