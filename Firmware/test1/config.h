@@ -47,9 +47,9 @@
 
 // ADC TIMER ******************************************************************
 // Timer used to trigger ADC1 and ADC2
-#define ADC_TIMER_CLK           RCC_APB2Periph_TIM1
+#define ADC_TIMER_CLK           RCC_APB2Periph_TIM8
 
-#define ADC_TIMER               TIM1
+#define ADC_TIMER               TIM8
 
 #define ADC_TIMER_PERIOD        1000  //72M/12 = 6mhz
 
@@ -57,6 +57,9 @@
 
 #define ADC_SAMPLING_TIME       ADC_SampleTime_1Cycles5
 //#define ADC_SAMPLING_TIME       ADC_SampleTime_181Cycles5
+
+//#define ADC_TRIGGER_SOURCE      ADC_ExternalTrigConvEvent_9;//TIM1_TRGO
+#define ADC_TRIGGER_SOURCE      ADC_ExternalTrigConvEvent_7;//TIM8_TRGO
 
 //Divided signal from probe -> ADC1
 

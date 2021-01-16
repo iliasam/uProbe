@@ -176,7 +176,7 @@ void adc_init(void)
   ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
   
   ADC_InitStructure.ADC_ContinuousConvMode = ADC_ContinuousConvMode_Disable;//ext trigger
-  ADC_InitStructure.ADC_ExternalTrigConvEvent = ADC_ExternalTrigConvEvent_9;//TIM1_TRGO
+  ADC_InitStructure.ADC_ExternalTrigConvEvent = ADC_TRIGGER_SOURCE;//TIM1_TRGO
   ADC_InitStructure.ADC_ExternalTrigEventEdge = ADC_ExternalTrigEventEdge_RisingEdge;
     
   ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
