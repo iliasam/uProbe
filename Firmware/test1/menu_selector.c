@@ -128,18 +128,18 @@ void menu_selector_draw_items(void)
   uint8_t i = 0;
   uint8_t y_pos = 10;//start in pixels
   
-  display_draw_string("  SELECT MENU", 0, 0, FONT_SIZE_8, 0, COLOR_WHITE);
+  display_draw_string("  SELECT MENU", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
   while (menu_selector_items[i].item_number > 0)
   {
-    display_draw_string((char*)menu_selector_items[i].name, 6, y_pos, FONT_SIZE_8, 0, COLOR_WHITE); //shifted right for displaying cursor
+    display_draw_string((char*)menu_selector_items[i].name, 8, y_pos, FONT_SIZE_11, 0, COLOR_WHITE); //shifted right for displaying cursor
     
     //draw cursor
     if (menu_selector_items[i].item_type == menu_selector_selected)
-      display_draw_string(">", 0, y_pos, FONT_SIZE_8, 0, COLOR_WHITE);
+      display_draw_string(">", 0, y_pos, FONT_SIZE_11, 0, COLOR_YELLOW);
     else
-      display_draw_string(" ", 0, y_pos, FONT_SIZE_8, 0, COLOR_WHITE);
+      display_draw_string(" ", 0, y_pos, FONT_SIZE_11, 0, COLOR_WHITE);
     
-    y_pos+= 9;
+    y_pos+= FONT_SIZE_11 + 1;
     i++;
   }
 }
@@ -289,15 +289,15 @@ void menu_selector_draw_adc_calib_menu(void)
 
 void menu_selector_draw_info_menu(void)
 {
-  display_draw_string(" DEVICE INFO", 0, 0, FONT_SIZE_8, 0, COLOR_WHITE);
-  display_draw_string("FW VERSION: 1.1", 0, 12, FONT_SIZE_8, 0, COLOR_WHITE);
+  display_draw_string("DEVICE INFO", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+  display_draw_string("FW VERSION: 1.2", 0, 14, FONT_SIZE_11, 0, COLOR_WHITE);
   
   char tmp_str[32];
   float bat_voltage = power_controlling_meas_battery_voltage();
   sprintf(tmp_str, "BATT VOLT: %.02f V", bat_voltage);
-  display_draw_string(tmp_str, 0, 24, FONT_SIZE_8, 0, COLOR_WHITE);
+  display_draw_string(tmp_str, 0, 30, FONT_SIZE_11, 0, COLOR_WHITE);
   
-  display_draw_string(" by ILIASAM 2021", 0, 50, FONT_SIZE_8, 0, COLOR_WHITE);
+  display_draw_string(" by ILIASAM 2021", 0, 60, FONT_SIZE_11, 0, COLOR_WHITE);
 }
 
 //*****************************************************************************

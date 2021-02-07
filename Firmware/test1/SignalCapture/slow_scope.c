@@ -159,16 +159,16 @@ void slow_scope_draw_menu(menu_draw_type_t draw_type)
     if (new_data_pending == 1)
     {
       if ((slow_scope_capture_en_flag == 0) && ((ms_tick % 1000) < 500))
-        display_draw_string(" STOPPED  ", 0, 0, FONT_SIZE_8, 0, COLOR_RED);
+        display_draw_string("  STOPPED   ", 0, 0, FONT_SIZE_8, 0, COLOR_RED);
       else
-        display_draw_string("SLOW SCOPE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+        display_draw_string(" SLOW SCOPE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
       
       char tmp_str[32];
       memset(tmp_str, 0, sizeof(tmp_str));
       
       sprintf(tmp_str, "%dV / %dV",(int)slow_scope_grid_v, (int)slow_scope_max_voltage);
       menu_shift_string_right(tmp_str, 9);
-      display_draw_string(tmp_str, 70, 0, FONT_SIZE_8, 0, COLOR_WHITE);
+      display_draw_string(tmp_str, 90, 0, FONT_SIZE_8, 0, COLOR_WHITE);
       
       slow_scope_clear_active_zone();
       slow_scope_calcutate_grid_step();
@@ -241,9 +241,9 @@ uint16_t slow_scope_draw_edges(uint16_t x, adc_processed_data_t point)
   
   for (uint16_t y = max_y; y <= min_y; y+= 2)
   {
-    display_set_pixel_color(x, y, COLOR_WHITE);
+    display_set_pixel_color(x, y, COLOR_GREEN);
   }
-  display_set_pixel_color(x, min_y, COLOR_WHITE);//last point must be always on
+  display_set_pixel_color(x, min_y, COLOR_GREEN);//last point must be always on
   return min_y;
 }
 
@@ -292,7 +292,7 @@ void slow_scope_draw_voltage_grid(uint16_t x)
   while (voltage_val < slow_scope_max_voltage)
   {
     uint16_t y_pos = slow_scope_get_y_from_voltage(voltage_val);
-    display_set_pixel_color(x, y_pos, COLOR_WHITE);
+    display_set_pixel_color(x, y_pos, COLOR_YELLOW);
     voltage_val+= slow_scope_grid_v;
   }
 }

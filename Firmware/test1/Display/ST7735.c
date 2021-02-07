@@ -130,6 +130,7 @@ void display_init_conv_table(void)
   color_convert_table[COLOR_GREEN] = 0x07E0;
   color_convert_table[COLOR_BLUE] = 0x001F;
   color_convert_table[COLOR_YELLOW] = 0xFFE0;
+  color_convert_table[COLOR_GRAY] = 0X8430;
 }
 
 // Initialize display

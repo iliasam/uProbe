@@ -298,13 +298,13 @@ void data_processing_process_logic_probe_data(void)
     }
     else
     {
-      logic_probe_signal_state = SIGNAL_TYPE_UNKOWN_STATE;
+      logic_probe_signal_state = SIGNAL_TYPE_UNKNOWN_STATE;
       data_processing_process_voltmeter_data();
     }
   }
   else
   {
-    logic_probe_signal_state = SIGNAL_TYPE_UNKOWN_STATE;
+    logic_probe_signal_state = SIGNAL_TYPE_UNKNOWN_STATE;
     data_processing_process_voltmeter_data();
   }
 }

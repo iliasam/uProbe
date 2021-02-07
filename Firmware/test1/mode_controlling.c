@@ -181,7 +181,7 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
       case SIGNAL_TYPE_PULSED_STATE:
         display_draw_string(" PULSE ", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
-      case SIGNAL_TYPE_UNKOWN_STATE:
+      case SIGNAL_TYPE_UNKNOWN_STATE:
         display_draw_string("UNKNOWN", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       default: break;
@@ -190,14 +190,14 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
       //Draw voltage when input voltage is stable
       if ((logic_probe_signal_state == SIGNAL_TYPE_LOW_STATE) || 
           (logic_probe_signal_state == SIGNAL_TYPE_HIGH_STATE) ||
-          (logic_probe_signal_state == SIGNAL_TYPE_UNKOWN_STATE))
+          (logic_probe_signal_state == SIGNAL_TYPE_UNKNOWN_STATE))
       {
         menu_print_big_voltage(tmp_str, voltmeter_voltage);
-        display_draw_string(tmp_str, 25, 53, FONT_SIZE_11, 0, COLOR_WHITE);
+        display_draw_string(tmp_str, 55, 65, FONT_SIZE_11, 0, COLOR_WHITE);
       }
       else
       {
-        display_draw_string("        ", 25, 53, FONT_SIZE_11, 0, COLOR_WHITE);
+        display_draw_string("        ", 55, 65, FONT_SIZE_11, 0, COLOR_WHITE);
       }
 
       display_update();
@@ -212,7 +212,7 @@ void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("   VOLTMETER MODE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    display_draw_string("VOLTMETER MODE", 30, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
     display_update();
   }
   else //PARTIAL update
@@ -227,7 +227,7 @@ void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
     {
       char tmp_str[32];
       menu_print_big_voltage(tmp_str, voltmeter_voltage);
-      display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0, COLOR_WHITE);
+      display_draw_string(tmp_str, 10, 20, FONT_SIZE_33, 0, COLOR_WHITE);
       display_update();
     }
     
@@ -242,7 +242,7 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string(" FREQUENCY MEASURE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    display_draw_string("FREQUENCY MEASUREMENT", 20, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
     
     if (freq_meter_calib_state == FREQ_METER_CALIB_WAIT_START)
     {   
@@ -275,10 +275,10 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
       if (freq_meter_calib_state == FREQ_METER_CALIB_IDLE)//normal working
       {
         menu_print_current_frequency(tmp_str);
-        display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0, COLOR_WHITE);
+        display_draw_string(tmp_str, 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
         
         sprintf(tmp_str, "LEVEL: %.02f V", comparator_threshold_v);
-        display_draw_string(tmp_str, 10, 50, FONT_SIZE_8, 0, COLOR_WHITE);
+        display_draw_string(tmp_str, 30, 65, FONT_SIZE_11, 0, COLOR_WHITE);
         
         display_update();
         
@@ -304,7 +304,7 @@ void menu_baud_meter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string(" BAUDRATE MEASURE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    display_draw_string("BAUDRATE MEASUREMENT", 20, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
     display_update();
   }
   else //PARTIAL update
@@ -315,12 +315,12 @@ void menu_baud_meter_menu(menu_draw_type_t draw_type)
     else
       sprintf(tmp_str, "%d    ", baud_meter_current_rounded_baud);
     
-    display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0, COLOR_WHITE);
+    display_draw_string(tmp_str, 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
     
     if (baud_meter_is_in_fast_mode())
-      display_draw_string(" Fast mode", 0, 50, FONT_SIZE_8, 0, COLOR_WHITE);
+      display_draw_string(" Fast mode", 0, 70, FONT_SIZE_8, 0, COLOR_WHITE);
     else
-      display_draw_string("          ", 0, 50, FONT_SIZE_8, 0, COLOR_WHITE);
+      display_draw_string("          ", 0, 70, FONT_SIZE_8, 0, COLOR_WHITE);
       
     
     display_update();
@@ -343,9 +343,9 @@ void menu_print_current_frequency(char* str)
 void menu_print_big_voltage(char* str, float voltage)
 {
   if (voltage < 10.0f)
-    sprintf(str, "  %.02fV", voltage);
-  else
     sprintf(str, " %.02fV", voltage);
+  else
+    sprintf(str, "%.02fV", voltage);
 }
 
 // Shift null-terminated string to right corner

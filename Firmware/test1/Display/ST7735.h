@@ -18,6 +18,7 @@ typedef enum
   COLOR_GREEN = 3,
   COLOR_BLUE = 4,
   COLOR_YELLOW = 5,
+  COLOR_GRAY = 6,
   COLOR_ENUM_SIZE
 } color_enum_t;
 
