@@ -128,16 +128,16 @@ void menu_selector_draw_items(void)
   uint8_t i = 0;
   uint8_t y_pos = 10;//start in pixels
   
-  display_draw_string("  SELECT MENU", 0, 0, FONT_SIZE_8, 0);
+  display_draw_string("  SELECT MENU", 0, 0, FONT_SIZE_8, 0, COLOR_WHITE);
   while (menu_selector_items[i].item_number > 0)
   {
-    display_draw_string((char*)menu_selector_items[i].name, 6, y_pos, FONT_SIZE_8, 0); //shifted right for displaying cursor
+    display_draw_string((char*)menu_selector_items[i].name, 6, y_pos, FONT_SIZE_8, 0, COLOR_WHITE); //shifted right for displaying cursor
     
     //draw cursor
     if (menu_selector_items[i].item_type == menu_selector_selected)
-      display_draw_string(">", 0, y_pos, FONT_SIZE_8, 0);
+      display_draw_string(">", 0, y_pos, FONT_SIZE_8, 0, COLOR_WHITE);
     else
-      display_draw_string(" ", 0, y_pos, FONT_SIZE_8, 0);
+      display_draw_string(" ", 0, y_pos, FONT_SIZE_8, 0, COLOR_WHITE);
     
     y_pos+= 9;
     i++;
@@ -261,26 +261,26 @@ void menu_selector_subitem_adc_config_button_pressed(uint8_t is_upper)
 
 void menu_selector_draw_adc_calib_menu(void)
 {
-  display_draw_string(" ADC CALIBRATION", 0, 0, FONT_SIZE_8, 0);
+  display_draw_string(" ADC CALIBRATION", 0, 0, FONT_SIZE_8, 0, COLOR_WHITE);
   
   switch (data_processing_adc_calib_state)
   {
     case ADC_CALIB_DISPLAY_MSG1:
-      display_draw_string("TOUCH EXTERNAL", 0, 13, FONT_SIZE_11, 0);
-      display_draw_string("   VOLTAGE", 0, 27, FONT_SIZE_11, 0);
-      display_draw_string("  FOR 1 SEC", 0, 41, FONT_SIZE_11, 0);
+      display_draw_string("TOUCH EXTERNAL", 0, 13, FONT_SIZE_11, 0, COLOR_WHITE);
+      display_draw_string("   VOLTAGE", 0, 27, FONT_SIZE_11, 0, COLOR_WHITE);
+      display_draw_string("  FOR 1 SEC", 0, 41, FONT_SIZE_11, 0, COLOR_WHITE);
       break;
       
     case ADC_CALIB_MEASURE1:
-      display_draw_string("  MEASURING", 0, 13, FONT_SIZE_11, 0);
-      display_draw_string("   VOLTAGE", 0, 27, FONT_SIZE_11, 0);
+      display_draw_string("  MEASURING", 0, 13, FONT_SIZE_11, 0, COLOR_WHITE);
+      display_draw_string("   VOLTAGE", 0, 27, FONT_SIZE_11, 0, COLOR_WHITE);
       break;
       
     case ADC_CALIB_DISPLAY_CALIB:
-      display_draw_string("  Correct voltage:", 0, 12, FONT_SIZE_8, 0);
+      display_draw_string("  Correct voltage:", 0, 12, FONT_SIZE_8, 0, COLOR_WHITE);
       char tmp_str[32];
       menu_print_big_voltage(tmp_str, data_processing_adc_calib_voltage);
-      display_draw_string(tmp_str, 0, 24, FONT_SIZE_22, 0);
+      display_draw_string(tmp_str, 0, 24, FONT_SIZE_22, 0, COLOR_WHITE);
       break;
   }
 }
@@ -289,24 +289,24 @@ void menu_selector_draw_adc_calib_menu(void)
 
 void menu_selector_draw_info_menu(void)
 {
-  display_draw_string(" DEVICE INFO", 0, 0, FONT_SIZE_8, 0);
-  display_draw_string("FW VERSION: 1.1", 0, 12, FONT_SIZE_8, 0);
+  display_draw_string(" DEVICE INFO", 0, 0, FONT_SIZE_8, 0, COLOR_WHITE);
+  display_draw_string("FW VERSION: 1.1", 0, 12, FONT_SIZE_8, 0, COLOR_WHITE);
   
   char tmp_str[32];
   float bat_voltage = power_controlling_meas_battery_voltage();
   sprintf(tmp_str, "BATT VOLT: %.02f V", bat_voltage);
-  display_draw_string(tmp_str, 0, 24, FONT_SIZE_8, 0);
+  display_draw_string(tmp_str, 0, 24, FONT_SIZE_8, 0, COLOR_WHITE);
   
-  display_draw_string(" by ILIASAM 2021", 0, 50, FONT_SIZE_8, 0);
+  display_draw_string(" by ILIASAM 2021", 0, 50, FONT_SIZE_8, 0, COLOR_WHITE);
 }
 
 //*****************************************************************************
 
 void menu_selector_draw_set_off_time(void)
 {
-  display_draw_string(" SET OFF TIME", 0, 10, FONT_SIZE_11, 0);
+  display_draw_string(" SET OFF TIME", 0, 10, FONT_SIZE_11, 0, COLOR_WHITE);
   
   char tmp_str[32];
   sprintf(tmp_str, "TIME: %d s", nvram_data.power_off_time);
-  display_draw_string(tmp_str, 0, 30, FONT_SIZE_11, 0);
+  display_draw_string(tmp_str, 0, 30, FONT_SIZE_11, 0, COLOR_WHITE);
 }

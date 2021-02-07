@@ -3,7 +3,7 @@
 
 #include "stdint.h"
 #include "string.h"
-#include "SSD1315.h"
+#include "ST7735.h"
 #include "fonts.h"
 
 #define DISPLAY_WIDTH           DISP_WIDTH
@@ -24,25 +24,26 @@
 #define FONT_SIZE_22            22
 #define FONT_SIZE_22_WIDTH      16
 
+#define FONT_SIZE_33            33
+#define FONT_SIZE_33_WIDTH      23
+
 #define LCD_NEW_LINE_FLAG       1//jump to new line
 #define LCD_INVERTED_FLAG       2//inverted draw
 
 void display_full_clear(void);
 void display_clear_framebuffer(void);
 void display_update(void);
-void display_set_pixel(uint16_t x, uint16_t y);
-void display_reset_pixel(uint16_t x, uint16_t y);
+void display_set_pixel_color(uint16_t x, uint16_t y, uint8_t color);
 
-void display_draw_char(uint8_t chr, uint16_t x, uint16_t y, uint8_t font_size, uint8_t flags);
+void display_draw_char(uint8_t chr, uint16_t x, uint16_t y, uint8_t font_size, uint8_t flags, uint8_t color);
 void display_set_cursor_pos(uint16_t x, uint16_t y);
-uint16_t display_draw_string(char *s, uint16_t x, uint16_t y, uint8_t font_size, uint8_t flags);
-uint16_t display_draw_string_cur(char *s, uint8_t font_size, uint8_t flags);
+uint16_t display_draw_string(char *s, uint16_t x, uint16_t y, uint8_t font_size, uint8_t flags, uint8_t color);
+uint16_t display_draw_string_cur(char *s, uint8_t font_size, uint8_t flags, uint8_t color);
 uint16_t get_font_width(uint8_t font);
-void draw_caption_bar(uint8_t height);
+void draw_caption_bar(uint8_t height, uint8_t color);
 
-void display_draw_line(uint16_t y);
-void display_clear_line(uint16_t y);
-void display_draw_vertical_line(uint16_t x, uint16_t y1, uint16_t y2);
+void display_draw_line(uint16_t y, uint8_t color);
+void display_draw_vertical_line(uint16_t x, uint16_t y1, uint16_t y2, uint8_t color);
 
 #endif
 

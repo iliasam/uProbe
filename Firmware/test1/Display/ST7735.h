@@ -1,5 +1,5 @@
-#ifndef __SSD1315_H
-#define __SSD1315_H
+#ifndef __ST7735_H
+#define __ST7735_H
 
 /* Includes ------------------------------------------------------------------*/
 
@@ -9,6 +9,17 @@
 #include "stm32f30x.h"
 #include "stm32f30x_rcc.h"
 #include "stm32f30x_gpio.h"
+
+typedef enum
+{
+  COLOR_BLACK = 0,
+  COLOR_WHITE = 1,
+  COLOR_RED = 2,
+  COLOR_GREEN = 3,
+  COLOR_BLUE = 4,
+  COLOR_YELLOW = 5,
+  COLOR_ENUM_SIZE
+} color_enum_t;
 
 //#define INVERT_MODE				1 // Rotate display
 
@@ -21,32 +32,18 @@
 #define DISP_RST_SET_LOW  GPIO_ResetBits(DISPLAY_RES_N_GPIO, DISPLAY_RES_N_PIN);
 #define DISP_RST_SET_HIGH GPIO_SetBits(DISPLAY_RES_N_GPIO, DISPLAY_RES_N_PIN);
 
-#define DISP_WIDTH                      128
-#define DISP_HEIGHT                     64
-#define DISP_PAGE_CNT                   8
+#define DISP_WIDTH                      160
+#define DISP_HEIGHT                     80
 
-#define DISP_DEFAULT_CONTRAST           (128)
-
-#define SSD1315_SET_PAGE_ADDR           0xB0 // in Page Addressing Mode
-#define SSD1315_SET_CONTRAST_CMD        0x81
-#define SSD1315_SET_START_LINE_CMD      0x40
-
-#define SSD1315_ALL_ON_CMD              0xA5
-#define SSD1315_ALL_OFF_CMD             0xA4 //disable all on
-
-#define SSD1315_NORMAL_MODE_CMD         0xA6
-#define SSD1315_INVERSE_MODE_CMD        0xA7
 
 void display_init_pins(void);
 
 void display_delay(unsigned long p);	//	задержка
 #define DELAY_NOP				display_delay(10);
 
-void display_write_data(unsigned char dat);
+void display_write_data8(unsigned char dat);
+
 void display_write_cmd(unsigned char cmd);
-void display_set_start_line(unsigned char line);
-void display_set_page_address(unsigned char page);
-void display_set_column_address(unsigned char column);
 void display_Power_Control(unsigned char vol);
 void display_set_contrast_value(unsigned char value);
 

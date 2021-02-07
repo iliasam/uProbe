@@ -3,7 +3,7 @@
 #include "hardware.h"
 #include "stm32f30x_gpio.h"
 #include "nvram.h"
-#include "SSD1315.h"
+#include "ST7735.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

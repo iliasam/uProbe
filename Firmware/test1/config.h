@@ -5,13 +5,14 @@
 /* Includes ------------------------------------------------------------------*/
 
 // BUTTONS ********************************************************************
-// Button 1 - wakeup
-#define BUTTON_1_GPIO           GPIOA
-#define BUTTON_1_PIN            GPIO_Pin_0
 
-// Button 2
-#define BUTTON_2_GPIO           GPIOA
-#define BUTTON_2_PIN            GPIO_Pin_3
+// Lower button - wakeup
+#define BUTTON1_GPIO            GPIOA
+#define BUTTON1_PIN             GPIO_Pin_0
+
+// Upper button
+#define BUTTON2_GPIO            GPIOA
+#define BUTTON2_PIN             GPIO_Pin_3
 
 // DISPLAY ********************************************************************
 
@@ -23,15 +24,15 @@
 
 // Data/command line - high(data) / low(command)
 #define DISPLAY_DC_N_GPIO       GPIOB
-#define DISPLAY_DC_N_PIN        GPIO_Pin_3
+#define DISPLAY_DC_N_PIN        GPIO_Pin_2
 
 // Display reset - active low
 #define DISPLAY_RES_N_GPIO      GPIOB
-#define DISPLAY_RES_N_PIN       GPIO_Pin_5
+#define DISPLAY_RES_N_PIN       GPIO_Pin_6
 
 // SPI CSn
 #define DISPLAY_CS_N_GPIO       GPIOB
-#define DISPLAY_CS_N_PIN        GPIO_Pin_6
+#define DISPLAY_CS_N_PIN        GPIO_Pin_5
 
 // SPI CLK
 #define DISPLAY_CLK_GPIO        GPIOB
@@ -150,19 +151,12 @@
 
 // Battery divider GND
 #define BATTERY_MEAS_GND_GPIO           GPIOA
-#define BATTERY_MEAS_GND_PIN            GPIO_Pin_12 //MEAS_GND
+#define BATTERY_MEAS_GND_PIN            GPIO_Pin_11 //MEAS_GND
 
 // Battery voltage divider coefficient
 #define BATTERY_DIV_VALUE               (2.0f)
 
-// BUTTON ********************************************************************
-// Lower button
-#define BUTTON1_GPIO                    GPIOA
-#define BUTTON1_PIN                     GPIO_Pin_0
 
-// Upper button
-#define BUTTON2_GPIO                    GPIOA
-#define BUTTON2_PIN                     GPIO_Pin_3
 
 
 

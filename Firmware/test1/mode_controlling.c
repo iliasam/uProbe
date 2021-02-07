@@ -143,7 +143,7 @@ void menu_redraw_display(menu_draw_type_t draw_type)
 void draw_not_supportd(void) //to delete
 {
   display_clear_framebuffer();
-  display_draw_string("NOT SUPPORTED", 0, 0, FONT_SIZE_11, 0);
+  display_draw_string("NOT SUPPORTED", 0, 0, FONT_SIZE_11, 0, COLOR_WHITE);
   display_update();
 }
 
@@ -153,7 +153,7 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("  LOGIC PROBE MODE", 0, 0, FONT_SIZE_8, 0);
+    display_draw_string("LOGIC PROBE MODE", 30, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
     display_update();
   }
   else //PARTIAL update
@@ -170,19 +170,19 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
       switch (logic_probe_signal_state)
       {
       case SIGNAL_TYPE_Z_STATE:
-        display_draw_string("Z STATE", 0, 20, FONT_SIZE_22, 0);
+        display_draw_string("Z STATE", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       case SIGNAL_TYPE_LOW_STATE:
-        display_draw_string("  LOW  ", 0, 20, FONT_SIZE_22, 0);
+        display_draw_string("  LOW  ", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       case SIGNAL_TYPE_HIGH_STATE:
-        display_draw_string("  HIGH ", 0, 20, FONT_SIZE_22, 0);
+        display_draw_string("  HIGH ", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       case SIGNAL_TYPE_PULSED_STATE:
-        display_draw_string(" PULSE ", 0, 20, FONT_SIZE_22, 0);
+        display_draw_string(" PULSE ", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       case SIGNAL_TYPE_UNKOWN_STATE:
-        display_draw_string("UNKNOWN", 0, 20, FONT_SIZE_22, 0);
+        display_draw_string("UNKNOWN", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       default: break;
       }
@@ -193,11 +193,11 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
           (logic_probe_signal_state == SIGNAL_TYPE_UNKOWN_STATE))
       {
         menu_print_big_voltage(tmp_str, voltmeter_voltage);
-        display_draw_string(tmp_str, 20, 46, FONT_SIZE_11, 0);
+        display_draw_string(tmp_str, 25, 53, FONT_SIZE_11, 0, COLOR_WHITE);
       }
       else
       {
-        display_draw_string("        ", 20, 46, FONT_SIZE_11, 0);
+        display_draw_string("        ", 25, 53, FONT_SIZE_11, 0, COLOR_WHITE);
       }
 
       display_update();
@@ -212,7 +212,7 @@ void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("   VOLTMETER MODE", 0, 0, FONT_SIZE_8, 0);
+    display_draw_string("   VOLTMETER MODE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
     display_update();
   }
   else //PARTIAL update
@@ -227,7 +227,7 @@ void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
     {
       char tmp_str[32];
       menu_print_big_voltage(tmp_str, voltmeter_voltage);
-      display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0);
+      display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0, COLOR_WHITE);
       display_update();
     }
     
@@ -242,27 +242,27 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string(" FREQUENCY MEASURE", 0, 0, FONT_SIZE_8, 0);
+    display_draw_string(" FREQUENCY MEASURE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
     
     if (freq_meter_calib_state == FREQ_METER_CALIB_WAIT_START)
     {   
-      display_draw_string("  AUTO TRIGGER ", 0, 15, FONT_SIZE_11, 0);
-      display_draw_string(" TOUCH TO SIGNAL", 0, 29, FONT_SIZE_11, 0);
+      display_draw_string("  AUTO TRIGGER ", 0, 15, FONT_SIZE_11, 0, COLOR_WHITE);
+      display_draw_string(" TOUCH TO SIGNAL", 0, 29, FONT_SIZE_11, 0, COLOR_WHITE);
     }
     else if (freq_meter_calib_state == FREQ_METER_CALIB_CAPTURE)
     {
-      display_draw_string("  AUTO TRIGGER ", 0, 15, FONT_SIZE_11, 0);
-      display_draw_string("   HOLD PROBE", 0, 29, FONT_SIZE_11, 0);
+      display_draw_string("  AUTO TRIGGER ", 0, 15, FONT_SIZE_11, 0, COLOR_WHITE);
+      display_draw_string("   HOLD PROBE", 0, 29, FONT_SIZE_11, 0, COLOR_WHITE);
     }
     else if (freq_meter_calib_state == FREQ_METER_CALIB_DONE)
     {
       char tmp_str[32];
       sprintf(tmp_str, " MIN voltage: %.02fV", comparator_min_voltage);
-      display_draw_string(tmp_str, 0, 22, FONT_SIZE_8, 0);
+      display_draw_string(tmp_str, 0, 22, FONT_SIZE_8, 0, COLOR_WHITE);
       sprintf(tmp_str, " MAX voltage: %.02fV", comparator_max_voltage);
-      display_draw_string(tmp_str, 0, 32, FONT_SIZE_8, 0);
+      display_draw_string(tmp_str, 0, 32, FONT_SIZE_8, 0, COLOR_WHITE);
       sprintf(tmp_str, " TRIGGR: %.02fV", comparator_threshold_v);
-      display_draw_string(tmp_str, 0, 42, FONT_SIZE_8, 0);
+      display_draw_string(tmp_str, 0, 42, FONT_SIZE_8, 0, COLOR_WHITE);
     }
     
     display_update();
@@ -275,10 +275,10 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
       if (freq_meter_calib_state == FREQ_METER_CALIB_IDLE)//normal working
       {
         menu_print_current_frequency(tmp_str);
-        display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0);
+        display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0, COLOR_WHITE);
         
         sprintf(tmp_str, "LEVEL: %.02f V", comparator_threshold_v);
-        display_draw_string(tmp_str, 10, 50, FONT_SIZE_8, 0);
+        display_draw_string(tmp_str, 10, 50, FONT_SIZE_8, 0, COLOR_WHITE);
         
         display_update();
         
@@ -304,7 +304,7 @@ void menu_baud_meter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string(" BAUDRATE MEASURE", 0, 0, FONT_SIZE_8, 0);
+    display_draw_string(" BAUDRATE MEASURE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
     display_update();
   }
   else //PARTIAL update
@@ -315,12 +315,12 @@ void menu_baud_meter_menu(menu_draw_type_t draw_type)
     else
       sprintf(tmp_str, "%d    ", baud_meter_current_rounded_baud);
     
-    display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0);
+    display_draw_string(tmp_str, 0, 20, FONT_SIZE_22, 0, COLOR_WHITE);
     
     if (baud_meter_is_in_fast_mode())
-      display_draw_string(" Fast mode", 0, 50, FONT_SIZE_8, 0);
+      display_draw_string(" Fast mode", 0, 50, FONT_SIZE_8, 0, COLOR_WHITE);
     else
-      display_draw_string("          ", 0, 50, FONT_SIZE_8, 0);
+      display_draw_string("          ", 0, 50, FONT_SIZE_8, 0, COLOR_WHITE);
       
     
     display_update();

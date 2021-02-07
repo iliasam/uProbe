@@ -14,7 +14,7 @@
 #define SLOW_SCOPE_START_OFFSET         (8)
 
 //Number of displayed points
-#define SLOW_SCOPE_POINT_CNT            (128)
+#define SLOW_SCOPE_POINT_CNT            (DISP_WIDTH)
 
 //Header is part with capture text
 #define SLOW_SCOPE_HEADER_HEIGHT        (9)
@@ -141,7 +141,7 @@ void slow_scope_draw_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("SLOW SCOPE", 0, 0, FONT_SIZE_8, 0);
+    display_draw_string("SLOW SCOPE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
     display_update();
   }
   else
@@ -159,16 +159,16 @@ void slow_scope_draw_menu(menu_draw_type_t draw_type)
     if (new_data_pending == 1)
     {
       if ((slow_scope_capture_en_flag == 0) && ((ms_tick % 1000) < 500))
-        display_draw_string(" STOPPED  ", 0, 0, FONT_SIZE_8, 0);
+        display_draw_string(" STOPPED  ", 0, 0, FONT_SIZE_8, 0, COLOR_RED);
       else
-        display_draw_string("SLOW SCOPE", 0, 0, FONT_SIZE_8, 0);
+        display_draw_string("SLOW SCOPE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
       
       char tmp_str[32];
       memset(tmp_str, 0, sizeof(tmp_str));
       
       sprintf(tmp_str, "%dV / %dV",(int)slow_scope_grid_v, (int)slow_scope_max_voltage);
       menu_shift_string_right(tmp_str, 9);
-      display_draw_string(tmp_str, 70, 0, FONT_SIZE_8, 0);
+      display_draw_string(tmp_str, 70, 0, FONT_SIZE_8, 0, COLOR_WHITE);
       
       slow_scope_clear_active_zone();
       slow_scope_calcutate_grid_step();
@@ -199,12 +199,12 @@ void slow_scope_draw_signal(void)
     {
       float tmp_voltage = (slow_scope_points[tmp_pointer].max_voltage + slow_scope_points[tmp_pointer].min_voltage) / 2.0f;//average
       uint16_t point_y = slow_scope_get_y_from_voltage(tmp_voltage);
-      display_set_pixel(x, point_y);
+      display_set_pixel_color(x, point_y, COLOR_WHITE);
       
       //Draw line connecting current point and previous point
       if (abs(prev_y - point_y) > 2)
       {
-        display_draw_vertical_line(x, prev_y, point_y);
+        display_draw_vertical_line(x, prev_y, point_y, COLOR_WHITE);
       }
       prev_y = point_y;
     }
@@ -214,7 +214,7 @@ void slow_scope_draw_signal(void)
         slow_scope_points[tmp_pointer].max_voltage); //y is smaller
       uint16_t min_y = slow_scope_get_y_from_voltage(
         slow_scope_points[tmp_pointer].min_voltage);//y is bigger
-      display_draw_vertical_line(x, min_y, max_y);
+      display_draw_vertical_line(x, min_y, max_y, COLOR_WHITE);
       
       prev_y = slow_scope_get_y_from_voltage(
         slow_scope_points[tmp_pointer].end_voltage);
@@ -241,9 +241,9 @@ uint16_t slow_scope_draw_edges(uint16_t x, adc_processed_data_t point)
   
   for (uint16_t y = max_y; y <= min_y; y+= 2)
   {
-    display_set_pixel(x, y);
+    display_set_pixel_color(x, y, COLOR_WHITE);
   }
-  display_set_pixel(x, min_y);//last point must be always on
+  display_set_pixel_color(x, min_y, COLOR_WHITE);//last point must be always on
   return min_y;
 }
 
@@ -275,14 +275,14 @@ void slow_scope_calcutate_grid_step(void)
 
 void slow_scope_draw_grid(void)
 {
-  display_draw_line(SLOW_SCOPE_Y_END);
-  
   //Graw time grid - X
   int16_t x;
   for (x = (SLOW_SCOPE_POINT_CNT - 1); x >= 0; x = x - SLOW_SCOPE_X_GRID_PERIOD)
   {
     slow_scope_draw_voltage_grid(x);
   }
+  
+  display_draw_line(SLOW_SCOPE_Y_END, COLOR_BLUE);
 }
 
 // Draw voltage grid - dots in Y line (vertical)
@@ -292,7 +292,7 @@ void slow_scope_draw_voltage_grid(uint16_t x)
   while (voltage_val < slow_scope_max_voltage)
   {
     uint16_t y_pos = slow_scope_get_y_from_voltage(voltage_val);
-    display_set_pixel(x, y_pos);
+    display_set_pixel_color(x, y_pos, COLOR_WHITE);
     voltage_val+= slow_scope_grid_v;
   }
 }
@@ -315,5 +315,5 @@ void slow_scope_clear_active_zone(void)
 {
   uint8_t y;
   for (y = SLOW_SCOPE_HEADER_HEIGHT; y < DISPLAY_HEIGHT; y++)
-    display_clear_line(y);
+    display_draw_line(y, COLOR_BLACK);
 }

@@ -5,7 +5,6 @@
 #include "main.h"
 
 #include "hardware.h"
-#include "SSD1315.h"
 #include "display_functions.h"
 #include "adc_controlling.h"
 #include "generator_timer.h"
