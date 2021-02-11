@@ -59,7 +59,6 @@
 #define ADC_SAMPLING_TIME       ADC_SampleTime_1Cycles5
 //#define ADC_SAMPLING_TIME       ADC_SampleTime_181Cycles5
 
-//#define ADC_TRIGGER_SOURCE      ADC_ExternalTrigConvEvent_9;//TIM1_TRGO
 #define ADC_TRIGGER_SOURCE      ADC_ExternalTrigConvEvent_7;//TIM8_TRGO
 
 //Divided signal from probe -> ADC1
@@ -67,13 +66,6 @@
 #define ADC_MAIN_IN_GPIO        GPIOA
 #define ADC_MAIN_IN_PIN         GPIO_Pin_2
 #define ADC_MAIN_IN_CHANNEL     ADC_Channel_3
-
-/*
-//test - button2
-#define ADC_MAIN_IN_GPIO        GPIOA
-#define ADC_MAIN_IN_PIN         GPIO_Pin_3
-#define ADC_MAIN_IN_CHANNEL     ADC_Channel_4
-*/
 
 //Divided and amplified signal from probe -> ADC2
 #define ADC_OPAMP_IN_GPIO       GPIOA
@@ -123,6 +115,11 @@
 #define COMP_GPIO                       GPIOB
 #define COMP_PIN                        GPIO_Pin_0 //COMP4_INP
 
+#define COMP_OUT_GPIO                   GPIOB
+#define COMP_OUT_PIN                    GPIO_Pin_1 //COMP4_OUT
+#define COMP_OUT_AF_SRC                 GPIO_PinSource1
+#define COMP_OUT_AFIO                   GPIO_AF_8
+
 //Main comparator - connected directly to the divider 
 #define COMP_MAIN_NAME                  COMP_Selection_COMP4
 
@@ -144,6 +141,18 @@
 #define COMP_MAIN_DMA_FLAG              DMA1_IT_TC4
 
 
+#define FREQ_MEAS_TIM_NAME              TIM1
+#define FREQ_MEAS_TIM_CLK_INIT_F        RCC_APB2PeriphClockCmd
+#define FREQ_MEAS_TIM_CLK               RCC_APB2Periph_TIM1
+#define FREQ_MEAS_TIM_IRQ               TIM1_UP_TIM16_IRQn
+#define FREQ_MEAS_TIM_IRQ_HANDLER       TIM1_UP_TIM16_IRQHandler
+
+//External clock nput - COMP4_OUT
+#define FREQ_MEAS_TIM_ETR_GPIO          GPIOA
+#define FREQ_MEAS_TIM_ETR_PIN           GPIO_Pin_12
+#define FREQ_MEAS_TIM_ETR_AF_SRC        GPIO_PinSource12
+#define FREQ_MEAS_TIM_ETR_AFIO          GPIO_AF_11
+
 // POWER CONTROLLING **********************************************************
 #define BATTERY_ADC_GPIO                GPIOB
 #define BATTERY_ADC_PIN                 GPIO_Pin_12 //BAT_VOLT
@@ -155,9 +164,6 @@
 
 // Battery voltage divider coefficient
 #define BATTERY_DIV_VALUE               (2.0f)
-
-
-
 
 
 

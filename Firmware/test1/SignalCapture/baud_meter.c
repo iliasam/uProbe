@@ -28,8 +28,6 @@
 
 #define BAUD_METER_ROUNDING_ACCURACY    (0.1f) //10%
 
-#define USE_INTERUPT_MODE               (1)
-
 #define BAUD_METER_TIMEOUT_MS           (1100)
 
 /* Private variables ---------------------------------------------------------*/

@@ -1009,6 +1009,9 @@
       <name>$PROJ_DIR$\..\SignalCapture\data_processing.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\SignalCapture\freq_measurement.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\SignalCapture\slow_scope.c</name>
     </file>
     <file>

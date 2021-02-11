@@ -13,6 +13,7 @@
 #include "keys_controlling.h"
 #include "mode_controlling.h"
 #include "data_processing.h"
+#include "freq_measurement.h"
 #include "nvram.h"
 
 #include <stdio.h>
@@ -44,6 +45,7 @@ int main(void)
   generator_timer_init();
   power_controlling_init();
   comparator_init(0);
+  freq_measurement_init_timers();
   keys_init();
   display_full_clear();
   menu_main_init();

@@ -3,6 +3,7 @@
 #include "display_functions.h"
 #include "data_processing.h"
 #include "comparator_handling.h"
+#include "freq_measurement.h"
 #include "slow_scope.h"
 #include "baud_meter.h"
 #include "menu_selector.h"
@@ -269,7 +270,7 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
   }
   else //PARTIAL update
   {
-    if (comp_processing_state == COMP_PROCESSING_DATA_DONE)
+    if (freq_measurement_state == FREQ_MEASUREMENT_PROCESSING_DATA_DONE)
     {
       char tmp_str[32];
       if (freq_meter_calib_state == FREQ_METER_CALIB_IDLE)//normal working
@@ -277,12 +278,12 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
         menu_print_current_frequency(tmp_str);
         display_draw_string(tmp_str, 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
         
-        sprintf(tmp_str, "LEVEL: %.02f V", comparator_threshold_v);
+        sprintf(tmp_str, "LEVEL: %.02f V", freq_comparator_threshold_v);
         display_draw_string(tmp_str, 30, 65, FONT_SIZE_11, 0, COLOR_WHITE);
         
         display_update();
         
-        comparator_start_freq_capture();
+        freq_measurement_start_freq_capture();
       }
     }
   }
@@ -330,14 +331,14 @@ void menu_baud_meter_menu(menu_draw_type_t draw_type)
 
 void menu_print_current_frequency(char* str)
 {
-  if (comparator_calc_frequency > 1e6)
+  if (freq_measurement_calc_frequency < 9)
     sprintf(str, "UNKNOWN");
-  else if (comparator_calc_frequency > 99999)
-    sprintf(str, "%d KHz", (comparator_calc_frequency / 1000));
-  else if (comparator_calc_frequency < 1000)
-    sprintf(str, " %d Hz    ", comparator_calc_frequency);
+  else if (freq_measurement_calc_frequency > 99999)
+    sprintf(str, "%d KHz", (freq_measurement_calc_frequency / 1000));
+  else if (freq_measurement_calc_frequency < 1000)
+    sprintf(str, " %d Hz    ", freq_measurement_calc_frequency);
   else
-    sprintf(str, "%dHz    ", comparator_calc_frequency);
+    sprintf(str, "%dHz    ", freq_measurement_calc_frequency);
 }
 
 void menu_print_big_voltage(char* str, float voltage)

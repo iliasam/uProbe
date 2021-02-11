@@ -13,4 +13,6 @@
 void hardware_init_all(void);
 void dwt_delay_us(uint32_t us);
 
+uint32_t hardware_dwt_get(void);
+
 #endif /* __HARDWARE_H */

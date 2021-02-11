@@ -7,6 +7,7 @@
 #include "comparator_handling.h"
 #include "mode_controlling.h"
 #include "baud_meter.h"
+#include "freq_measurement.h"
 #include "slow_scope.h"
 #include "menu_selector.h"
 #include "nvram.h"
@@ -170,7 +171,8 @@ void data_processing_main_mode_changed(void)
   //addition processing for SLOW_SCOPE mode
   slow_scope_processing_main_mode_changed();
   baud_meter_processing_main_mode_changed();
-  comparator_processing_main_mode_changed();
+  //comparator_processing_main_mode_changed();
+  freq_measurement_main_mode_changed();
   data_processing_adc_calib_running = 0;//reset
 }
 
@@ -188,7 +190,8 @@ void data_processing_handler(void)
     break;
     
     case MENU_MODE_FREQUENCY_METER:
-      comparator_processing_handler();
+      //comparator_processing_handler();
+      freq_measurement_processing_handler();
       data_processing_voltmeter_handler();//used for trigger calibration
     break;
     

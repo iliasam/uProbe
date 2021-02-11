@@ -7,6 +7,7 @@
 #include "mode_controlling.h"
 #include "data_processing.h"
 #include "adc_controlling.h"
+#include "freq_measurement.h"
 #include "main.h"
 #include "string.h"
 
@@ -31,24 +32,10 @@
 
 #define COMP_MIN_PERIOD_IN_FAST_MODE    (5)
 
-// Number of sampled points to skip
-#define FREQ_CALIB_START_OFFSET         (8)
-
-// Number of voltage measurement cycles
-#define FREQ_CALIB_CYCLES_CNT           (10)
-
-// If the voltage is lower, standart trigger value is used
-#define FREQ_CALIB_MIN_VOLTAGE         (0.2f)
-
-
-// Default voltage for comparator
-#define FREQ_TRIGGER_DEFAULT_V         (1.5f)
-
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
 comp_processing_state_t comp_processing_state = COMP_PROCESSING_IDLE;
-extern freq_meter_calib_state_t freq_meter_calib_state;
 extern data_processing_state_t data_processing_state;
 extern volatile uint16_t adc_raw_buffer0[ADC_BUFFER_SIZE];
 extern float data_processing_main_div;
@@ -73,8 +60,6 @@ uint16_t comparator_dma_events = 0;
 float comparator_min_voltage = 500.0f;
 float comparator_max_voltage = 0.0f;
 
-uint8_t comparator_freq_calibration_counter = 0;
-
 comp_interrupt_callback_t comparator_interrupt_callback_func = NULL;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -85,7 +70,6 @@ void comparator_prepare_dma(void);
 uint8_t comparator_process_slow_data(void);
 void comparator_process_fast_data(void);
 void comparator_start_dma(void);
-void comparator_freq_meter_trigger_handling(void);
 
 void COMP_MAIN_TIM_IRQ_HANDLER(void);
 void COMP_MAIN_EXTI_IRQ_HANDLER(void);
@@ -100,18 +84,6 @@ void COMP_MAIN_EXTI_IRQ_HANDLER(void)
     COMP_Cmd(COMP_MAIN_NAME, DISABLE);
     if (comparator_interrupt_callback_func != NULL)
       comparator_interrupt_callback_func();
-  }
-}
-
-
-// This function must be called when "main_menu_mode" is changed
-// Switch capture mode
-void comparator_processing_main_mode_changed(void)
-{
-  if (main_menu_mode == MENU_MODE_FREQUENCY_METER)
-  {
-    comparator_init(0);
-    comparator_threshold_v = FREQ_TRIGGER_DEFAULT_V;
   }
 }
 
@@ -174,14 +146,17 @@ void comparator_init(uint8_t interrupt_mode)
   COMP_InitStructure.COMP_InvertingInput    = COMP_InvertingInput_DAC1OUT1;
   COMP_InitStructure.COMP_NonInvertingInput = COMP_NonInvertingInput_IO1;
   COMP_InitStructure.COMP_Output            = COMP_Output_TIM4IC2; //<<<<
+  if (interrupt_mode == USE_NO_EVENTS_COMP)
+    COMP_InitStructure.COMP_Output = COMP_Output_None;
+    
   COMP_InitStructure.COMP_Mode              = COMP_Mode_HighSpeed;
-  COMP_InitStructure.COMP_Hysteresis        = COMP_Hysteresis_Low;
+  COMP_InitStructure.COMP_Hysteresis        = COMP_Hysteresis_No;
   COMP_InitStructure.COMP_OutputPol         = COMP_OutputPol_NonInverted;
   COMP_Init(COMP_MAIN_NAME, &COMP_InitStructure);
   
   COMP_Cmd(COMP_MAIN_NAME, ENABLE);
   
-  if (interrupt_mode)
+  if (interrupt_mode == USE_INTERUPT_MODE)
   {
     DMA_Cmd(COMP_MAIN_DMA_CH, DISABLE);
     TIM_Cmd(COMP_MAIN_TIM_NAME, DISABLE);
@@ -193,6 +168,28 @@ void comparator_init(uint8_t interrupt_mode)
     EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
     EXTI_InitStructure.EXTI_LineCmd = ENABLE;
     EXTI_Init(&EXTI_InitStructure);
+  }
+  else if (interrupt_mode == USE_NO_EVENTS_COMP)
+  {
+    DMA_Cmd(COMP_MAIN_DMA_CH, DISABLE);
+    TIM_Cmd(COMP_MAIN_TIM_NAME, DISABLE);
+    TIM_DMACmd(COMP_MAIN_TIM_NAME, COMP_MAIN_TIM_DMA_SRC, DISABLE);
+    
+    EXTI_InitStructure.EXTI_Line = COMP_MAIN_IRQ_EXTI_LINE;
+    EXTI_InitStructure.EXTI_LineCmd = DISABLE;
+    EXTI_Init(&EXTI_InitStructure);
+    
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = COMP_MAIN_IRQ;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+    NVIC_Init(&NVIC_InitStructure);
+    
+    GPIO_StructInit(&GPIO_InitStructure);
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_Pin = COMP_OUT_PIN;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_Init(COMP_OUT_GPIO, &GPIO_InitStructure);
+    GPIO_PinAFConfig(COMP_OUT_GPIO, COMP_OUT_AF_SRC, COMP_OUT_AFIO);
   }
   else
   {
@@ -377,82 +374,10 @@ void comparator_processing_handler(void)
     }
   }
   
-  comparator_freq_meter_trigger_handling();
+  //comparator_freq_meter_trigger_handling();
 }
 
-// Conrolling process of trigger level detection
-void comparator_freq_meter_trigger_handling(void)
-{
-  static freq_meter_calib_state_t prev_menu_mode = FREQ_METER_CALIB_IDLE;
-  static uint32_t calibration_timer = 0;
-  
-  // Detect state changing
-  if (prev_menu_mode != freq_meter_calib_state)
-  {
-    if (freq_meter_calib_state == FREQ_METER_CALIB_WAIT_START)
-    {
-      //Begin to wait while notification is displayed
-      START_TIMER(calibration_timer, FREQ_METER_START_WAIT_DELAY);
-    }
-  }
-  else
-  {
-    if (freq_meter_calib_state == FREQ_METER_CALIB_WAIT_START)
-    {
-      if (TIMER_ELAPSED(calibration_timer))
-      {
-        freq_meter_calib_state = FREQ_METER_CALIB_CAPTURE;//start capture
-        data_processing_start_new_capture();
-        comparator_freq_calibration_counter = 0;
-        comparator_min_voltage = 500.0f;
-        comparator_max_voltage = 0.0f;
-        menu_draw_frequency_meter_menu(MENU_MODE_FULL_REDRAW);
-      }
-    }
-    else if (freq_meter_calib_state == FREQ_METER_CALIB_CAPTURE)//running voltage capture
-    {
-      if (data_processing_state == PROCESSING_DATA_DONE)//voltage measured
-      {
-        comparator_freq_calibration_counter++;
-        adc_processed_data_t tmp_result = data_processing_extended(
-          (uint16_t*)&adc_raw_buffer0[FREQ_CALIB_START_OFFSET * 2], 
-          (ADC_BUFFER_SIZE / 2 - FREQ_CALIB_START_OFFSET * 2));
-        
-        if (tmp_result.min_voltage < comparator_min_voltage)
-          comparator_min_voltage = tmp_result.min_voltage;
-        if (tmp_result.max_voltage > comparator_max_voltage)
-          comparator_max_voltage = tmp_result.max_voltage;
-        
-        if (comparator_freq_calibration_counter > FREQ_CALIB_CYCLES_CNT)
-        {
-          //Calculate trigger voltage
-          float tmp_voltage = (comparator_min_voltage + comparator_max_voltage) / 2.0;
-          if (tmp_voltage < FREQ_CALIB_MIN_VOLTAGE)
-            comparator_threshold_v = FREQ_TRIGGER_DEFAULT_V;
-          else
-            comparator_threshold_v = tmp_voltage;
-          
-          freq_meter_calib_state = FREQ_METER_CALIB_DONE;
-          menu_draw_frequency_meter_menu(MENU_MODE_FULL_REDRAW);
-          START_TIMER(calibration_timer, FREQ_METER_DONE_WAIT_DELAY);
-          return;
-        }
-        
-        data_processing_start_new_capture();//start to measure voltage
-        return;
-      }
-    }
-    else if (freq_meter_calib_state == FREQ_METER_CALIB_DONE)
-    {
-      if (TIMER_ELAPSED(calibration_timer))
-      {
-        freq_meter_calib_state = FREQ_METER_CALIB_IDLE;
-        menu_draw_frequency_meter_menu(MENU_MODE_FULL_REDRAW);
-      }
-    }
-  }
-  prev_menu_mode = freq_meter_calib_state;
-}
+
 
 //Return 0 - slow frequency detected
 //Return 1 - bad events number
