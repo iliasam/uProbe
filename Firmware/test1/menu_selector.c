@@ -22,6 +22,7 @@ menu_selector_item_t menu_selector_items[] =
   {2, MENU_SUBITEM_INFO, "INFO"},
   {3, MENU_SUBITEM_CALIBRATE, "CALIBRATE ADC"},
   {4, MENU_SUBITEM_SET_OFF_TIME, "SET OFF TIME"},
+  {4, MENU_SUBITEM_RESET, "RESET"},
   {0, MENU_SUBITEM_NULL, ""}, //null item
 };
 
@@ -261,7 +262,7 @@ void menu_selector_subitem_adc_config_button_pressed(uint8_t is_upper)
 
 void menu_selector_draw_adc_calib_menu(void)
 {
-  display_draw_string(" ADC CALIBRATION", 0, 0, FONT_SIZE_8, 0, COLOR_WHITE);
+  display_draw_string(" ADC CALIBRATION", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
   
   switch (data_processing_adc_calib_state)
   {
@@ -269,6 +270,7 @@ void menu_selector_draw_adc_calib_menu(void)
       display_draw_string("TOUCH EXTERNAL", 0, 13, FONT_SIZE_11, 0, COLOR_WHITE);
       display_draw_string("   VOLTAGE", 0, 27, FONT_SIZE_11, 0, COLOR_WHITE);
       display_draw_string("  FOR 1 SEC", 0, 41, FONT_SIZE_11, 0, COLOR_WHITE);
+      display_draw_string("  U > 3.0V", 0, 55, FONT_SIZE_11, 0, COLOR_RED);
       break;
       
     case ADC_CALIB_MEASURE1:
@@ -277,10 +279,12 @@ void menu_selector_draw_adc_calib_menu(void)
       break;
       
     case ADC_CALIB_DISPLAY_CALIB:
-      display_draw_string("  Correct voltage:", 0, 12, FONT_SIZE_8, 0, COLOR_WHITE);
+      display_draw_string("  Correct voltage:", 0, 22, FONT_SIZE_8, 0, COLOR_WHITE);
       char tmp_str[32];
       menu_print_big_voltage(tmp_str, data_processing_adc_calib_voltage);
-      display_draw_string(tmp_str, 0, 24, FONT_SIZE_22, 0, COLOR_WHITE);
+      display_draw_string(tmp_str, 0, 34, FONT_SIZE_22, 0, COLOR_WHITE);
+      
+      display_draw_string("< Hold to leave", 0, 65, FONT_SIZE_11, 0, COLOR_WHITE);
       break;
   }
 }

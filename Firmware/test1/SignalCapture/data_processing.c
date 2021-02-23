@@ -34,7 +34,7 @@
 #define DATA_PROC_LOGIC_PROBE_HIGH_STATE_THRESHOLD 260 //~2V
 #define DATA_PROC_LOGIC_PROBE_LOW_STATE_THRESHOLD  130 //~1V
 
-//If peak-peak voltage is bigger than this voltage that mean tha it is pulsed voltage
+//If peak-peak voltage is bigger than this voltage that mean that it is pulsed voltage
 #define DATA_PROC_LOGIC_PROBE_PEAK_THRESHOLD       0.5f //V
 
 #define DATA_PROC_LOGIC_PROBE_ANALYSE_LENGTH    \
@@ -91,8 +91,11 @@ extern volatile uint16_t adc_raw_buffer0[ADC_BUFFER_SIZE];
 void data_processing_logic_probe_handler(void);
 void data_processing_process_logic_probe_data(void);
 uint16_t data_processing_calc_adc_average(uint16_t* adc_buffer, uint16_t length);
+
 void data_processing_voltmeter_handler(void);
 void data_processing_process_voltmeter_data(void);
+void data_processing_process_peak_voltmeter_data(void);
+
 uint16_t data_processing_calc_peak_peak(uint16_t* adc_buffer, uint16_t length);
 float data_processing_adc_to_voltage(uint16_t adc1, uint16_t adc2);
 uint16_t data_processing_calculate_edges(uint16_t* adc_buffer, uint16_t length, float threshold_v);
@@ -100,6 +103,8 @@ void data_processing_adc_calibraion_mode(void);
 void data_processing_process_adc_calibration_data(void);
 uint8_t data_processing_process_adc_calibraion_fifo(void);
 void data_processing_adc_calibration_add_to_fifo(uint16_t new_value);
+uint16_t data_processing_calc_adc_maximum(uint16_t* adc_buffer, uint16_t length);
+
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -117,12 +122,12 @@ void data_processing_correct_raw_data(uint16_t zero_offset)
   
   for (uint16_t i = 0; i < MAIN_ADC_CAPTURED_POINTS; i++)
   {
-    uint16_t raw_value = adc_raw_buffer0[i*2];
+    uint16_t raw_value = adc_raw_buffer0[i * 2];
     float tmp_value = a_coef * raw_value + b_coef;//correction offset
     tmp_value = (float)raw_value + tmp_value;
     if (tmp_value < 0.0f)
-      tmp_value = 0.0;
-    adc_raw_buffer0[i*2] = (uint16_t)tmp_value;
+      tmp_value = 0.0f;
+    adc_raw_buffer0[i * 2] = (uint16_t)tmp_value;
   }
 }
 
@@ -246,7 +251,7 @@ void data_processing_process_logic_probe_data(void)
 {
   uint8_t i;
   
-  uint16_t peak_threshold = 
+  uint16_t peak_diff_threshold = 
     data_processing_volt_to_points(DATA_PROC_LOGIC_PROBE_PEAK_THRESHOLD);
 
   for (i = 0; i < DATA_PROC_LOGIC_PROBE_HPERIODS_NUM; i++)
@@ -257,12 +262,13 @@ void data_processing_process_logic_probe_data(void)
       (uint16_t*)&adc_raw_buffer0[start], DATA_PROC_LOGIC_PROBE_ANALYSE_LENGTH);
     
     //Calculate pulsation of voltage during HALF of period
-    uint16_t peak_result = data_processing_calc_peak_peak(
+    uint16_t peak_diff_result = data_processing_calc_peak_peak(
       (uint16_t*)&adc_raw_buffer0[start], DATA_PROC_LOGIC_PROBE_ANALYSE_LENGTH);
     
-    if (peak_result > peak_threshold)
+    if (peak_diff_result > peak_diff_threshold)
     {
       logic_probe_signal_state = SIGNAL_TYPE_PULSED_STATE;
+      data_processing_process_peak_voltmeter_data();
       return;
     }
   }
@@ -285,7 +291,10 @@ void data_processing_process_logic_probe_data(void)
   }
   
   if (big_diff_cnt == (DATA_PROC_LOGIC_PROBE_HPERIODS_NUM / 2))
+  {  
     logic_probe_signal_state = SIGNAL_TYPE_Z_STATE;
+    voltmeter_voltage = 0.0f;
+  }
   else if (low_diff_cnt == (DATA_PROC_LOGIC_PROBE_HPERIODS_NUM / 2)) //satble input
   {
     //Signal is stable all the time - mean strong external signal
@@ -345,6 +354,18 @@ void data_processing_process_voltmeter_data(void)
   voltmeter_voltage = data_processing_adc_to_voltage(adc1_result, adc2_result);
 }
 
+//Process data captured by ADC1 and ADC2
+//Maximum value is used here
+void data_processing_process_peak_voltmeter_data(void)
+{
+  uint16_t adc1_result = data_processing_calc_adc_maximum( //divider - coarse
+      (uint16_t*)&adc_raw_buffer0[6], (MAIN_ADC_CAPTURED_POINTS - 3));
+  uint16_t adc2_result = data_processing_calc_adc_maximum( //opamp - fine
+        (uint16_t*)&adc_raw_buffer0[7], (MAIN_ADC_CAPTURED_POINTS - 3));
+  
+  voltmeter_voltage = data_processing_adc_to_voltage(adc1_result, adc2_result);
+}
+
 //*****************************************************************************
 
 void data_processing_adc_calibraion_mode(void)
@@ -353,7 +374,7 @@ void data_processing_adc_calibraion_mode(void)
   {
     //first start
     data_processing_adc_calib_running = 1;
-    START_TIMER(data_processing_adc_calib_timer, 1500);
+    START_TIMER(data_processing_adc_calib_timer, 2000);
     return;
   }
   
@@ -494,6 +515,25 @@ uint16_t data_processing_calc_adc_average(uint16_t* adc_buffer, uint16_t length)
     summ+= adc_buffer[i];// data from two ADC's alternates
   }
   return (uint16_t)(summ / length);
+}
+
+// Calculate maximum value from RAW adc data
+// length - number of analysed points
+// Return - raw voltage
+uint16_t data_processing_calc_adc_maximum(uint16_t* adc_buffer, uint16_t length)
+{
+  uint16_t i;
+  if (length == 0)
+    return 0;
+  
+  uint16_t max_value = 0;
+  for (i = 0; i < (length * 2); i+= 2)
+  {
+    // data from two ADC's alternates
+    if (adc_buffer[i] > max_value)
+      max_value = adc_buffer[i];
+  }
+  return (uint16_t)max_value;
 }
 
 // Calculate peak-peak value from RAW adc data

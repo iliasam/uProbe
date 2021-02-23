@@ -19,6 +19,12 @@ menu_mode_t main_menu_mode = MENU_MODE_LOGIC_PROBE;
 
 freq_meter_calib_state_t freq_meter_calib_state = FREQ_METER_CALIB_IDLE;
 
+#define VOLTAGE_BAR_HEIGHT      (6)
+
+#define MENU_LOW_LEVEL_VALUE_V      (1.0f)
+#define MENU_HIGH_LEVEL_VALUE_V     (2.0f)
+#define MENU_MAX_LEVEL_VALUE_V      (5.0f)
+
 /* Private function prototypes -----------------------------------------------*/
 void menu_draw_logic_probe_menu(menu_draw_type_t draw_type);
 void menu_draw_voltmeter_menu(menu_draw_type_t draw_type);
@@ -27,7 +33,8 @@ void menu_print_current_frequency(char* str);
 void menu_baud_meter_menu(menu_draw_type_t draw_type);
 void menu_freq_meter_upper_button_pressed(void);
 void draw_not_supportd(void);//to delete
-
+void menu_draw_voltage_bar(float meas_avr_voltage_v);
+uint16_t menu_draw_get_bar_horiz_value_pix(float voltage_v);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -171,19 +178,19 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
       switch (logic_probe_signal_state)
       {
       case SIGNAL_TYPE_Z_STATE:
-        display_draw_string("Z STATE", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
+        display_draw_string("Z STATE", 0, 17, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       case SIGNAL_TYPE_LOW_STATE:
-        display_draw_string("  LOW  ", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
+        display_draw_string("  LOW  ", 0, 17, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       case SIGNAL_TYPE_HIGH_STATE:
-        display_draw_string("  HIGH ", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
+        display_draw_string("  HIGH ", 0, 17, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       case SIGNAL_TYPE_PULSED_STATE:
-        display_draw_string(" PULSE ", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
+        display_draw_string(" PULSE ", 0, 17, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       case SIGNAL_TYPE_UNKNOWN_STATE:
-        display_draw_string("UNKNOWN", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
+        display_draw_string("UNKNOWN", 0, 17, FONT_SIZE_33, 0, COLOR_WHITE);
         break;
       default: break;
       }
@@ -194,17 +201,72 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
           (logic_probe_signal_state == SIGNAL_TYPE_UNKNOWN_STATE))
       {
         menu_print_big_voltage(tmp_str, voltmeter_voltage);
-        display_draw_string(tmp_str, 55, 65, FONT_SIZE_11, 0, COLOR_WHITE);
+        display_draw_string(tmp_str, 55, 63, FONT_SIZE_11, 0, COLOR_WHITE);
       }
       else
       {
-        display_draw_string("        ", 55, 65, FONT_SIZE_11, 0, COLOR_WHITE);
+        display_draw_string("        ", 55, 63, FONT_SIZE_11, 0, COLOR_WHITE);
       }
+      
+      menu_draw_voltage_bar(voltmeter_voltage);
 
       display_update();
       
     }
   }
+}
+
+void menu_draw_voltage_bar(float meas_avr_voltage_v)
+{
+  uint16_t start_y = 51;
+  
+  uint16_t low_x_offset_pix = 
+    menu_draw_get_bar_horiz_value_pix(MENU_LOW_LEVEL_VALUE_V);
+  uint16_t hight_x_offset_pix = 
+    menu_draw_get_bar_horiz_value_pix(MENU_HIGH_LEVEL_VALUE_V);
+  
+  
+  uint8_t color = 0;
+  for (uint16_t x = 0; x < LCD_RIGHT_OFFSET; x++)
+  {
+    if (x < low_x_offset_pix)
+      color = COLOR_BLUE;
+    else if (x < hight_x_offset_pix)
+      color = COLOR_YELLOW;
+    else
+      color = COLOR_RED;
+    
+    if ((x % 2) != 0)
+      color = COLOR_GRAY;
+    
+    float horiz_volatge = (float)x * MENU_MAX_LEVEL_VALUE_V / (float)LCD_RIGHT_OFFSET;
+    if (horiz_volatge > meas_avr_voltage_v)
+      color = COLOR_BLACK;
+      
+    display_draw_vertical_line(
+        x, start_y, start_y + VOLTAGE_BAR_HEIGHT, color);//low
+  }
+  
+
+  display_draw_vertical_line(
+    low_x_offset_pix, start_y, start_y + VOLTAGE_BAR_HEIGHT, COLOR_WHITE);//low
+  
+  display_draw_vertical_line(
+    hight_x_offset_pix, start_y, start_y + VOLTAGE_BAR_HEIGHT, COLOR_WHITE);//low
+  
+  display_draw_line(start_y, COLOR_WHITE);//upper line
+  display_draw_line(start_y + VOLTAGE_BAR_HEIGHT, COLOR_WHITE);//lower line
+  display_draw_vertical_line(
+    0, start_y, start_y + VOLTAGE_BAR_HEIGHT, COLOR_WHITE);//left
+  display_draw_vertical_line(
+    LCD_RIGHT_OFFSET, start_y, start_y + VOLTAGE_BAR_HEIGHT, COLOR_WHITE);//right
+}
+
+//Return value in hoziz pixels
+uint16_t menu_draw_get_bar_horiz_value_pix(float voltage_v)
+{
+  float result = voltage_v * (float)LCD_RIGHT_OFFSET / MENU_MAX_LEVEL_VALUE_V;
+  return (uint16_t)result;
 }
 
 //*****************************************************************************
@@ -259,11 +321,15 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
     {
       char tmp_str[32];
       sprintf(tmp_str, " MIN voltage: %.02fV", comparator_min_voltage);
-      display_draw_string(tmp_str, 0, 22, FONT_SIZE_8, 0, COLOR_WHITE);
+      display_draw_string(tmp_str, 0, 22, FONT_SIZE_11, 0, COLOR_WHITE);
       sprintf(tmp_str, " MAX voltage: %.02fV", comparator_max_voltage);
-      display_draw_string(tmp_str, 0, 32, FONT_SIZE_8, 0, COLOR_WHITE);
-      sprintf(tmp_str, " TRIGGR: %.02fV", comparator_threshold_v);
-      display_draw_string(tmp_str, 0, 42, FONT_SIZE_8, 0, COLOR_WHITE);
+      display_draw_string(tmp_str, 0, 35, FONT_SIZE_11, 0, COLOR_WHITE);
+      sprintf(tmp_str, " TRIGGER: %.02fV", comparator_threshold_v);
+      display_draw_string(tmp_str, 0, 48, FONT_SIZE_11, 0, COLOR_WHITE);
+    }
+    else
+    {
+      display_draw_string("UNKNOWN", 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
     }
     
     display_update();
