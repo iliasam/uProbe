@@ -30,6 +30,7 @@
 
 #define BAUD_METER_TIMEOUT_MS           (1100)
 
+
 /* Private variables ---------------------------------------------------------*/
 extern menu_mode_t main_menu_mode;
 extern volatile cap_status_type adc_capture_status;
@@ -51,18 +52,22 @@ uint8_t baud_meter_fast_meas_count = 0;
 // State of baud measurement
 baud_meter_processing_state_t baud_meter_processing_state = BAUD_PROCESSING_IDLE;
 uint32_t baud_meter_timeout_timer = 0;
+uint8_t baud_meter_fast_data_detected_flag = 0;
 
 // Table with common baudrates
 const uint32_t baud_meter_bauds_table[] = 
-  {1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 115200, 0};
+  {1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 115200, 230400, 0};
+
+volatile uint16_t test_edges_cnt = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void baud_meter_process_captured_data(void);
-uint16_t baud_meter_get_min_length(void);
+uint16_t baud_meter_get_min_length(uint16_t* edges_cnt_p);
 void baud_meter_update_period(uint32_t new_bit_length);
 void baud_meter_process_fast_captured_data(void);
 void baud_meter_round_baudrate(void);
 void baud_meter_handle_comp_interrupt(void);
+void baud_meter_start_fast_capture(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -82,11 +87,16 @@ void baud_meter_processing_handler(void)
 {
   if (baud_meter_processing_state == BAUD_PROCESSING_IDLE)
   {
-    //First try in slow mode
-    adc_set_sample_rate(DATA_PROC_SAMPLE_RATE_200K);
-    adc_capture_start();
-    
-    baud_meter_processing_state = BAUD_PROCESSING_CAPTURE_SLOW_RUNNING;
+    if (baud_meter_fast_data_detected_flag) //if preveous fast mode was OK, try it again
+      baud_meter_start_fast_capture();
+    else
+    {
+      //Try in slow mode
+      adc_set_sample_rate(DATA_PROC_SAMPLE_RATE_200K);
+      adc_capture_start();
+      START_TIMER(baud_meter_timeout_timer, BAUD_METER_TIMEOUT_MS);
+      baud_meter_processing_state = BAUD_PROCESSING_CAPTURE_SLOW_RUNNING;
+    }
   }
   else if (baud_meter_processing_state == BAUD_PROCESSING_CAPTURE_SLOW_RUNNING)
   {
@@ -118,19 +128,32 @@ void baud_meter_processing_handler(void)
 //Processing and controlling capture mode (after ADC capture is done)
 void baud_meter_process_captured_data(void)
 {
-  uint16_t min_bit_length = baud_meter_get_min_length();
+  uint16_t edges_cnt = 0;//number of detected fallig edges
+  uint16_t min_bit_length = baud_meter_get_min_length(&edges_cnt);
+  test_edges_cnt = edges_cnt;
   
   if (adc_current_sample_rate == DATA_PROC_SAMPLE_RATE_200K)
   {
-    if ((min_bit_length > 0) && (min_bit_length < BAUD_METER_FAST_MODE_THRESHOLD))
+    if ((min_bit_length > 0) && (min_bit_length < BAUD_METER_FAST_MODE_THRESHOLD) && (edges_cnt > 0))
     {
       // Too fast signal detected, we need to switch to fast mode and do several measurements
-      adc_set_sample_rate(DATA_PROC_SAMPLE_RATE_2M);
-      baud_meter_fast_meas_count = 0;
-      memset(&baud_meter_fast_bit_length_table[0], 0, sizeof(baud_meter_fast_bit_length_table));
-      baud_meter_processing_state = BAUD_PROCESSING_CAPTURE_FAST_WAIT; //wait for comparator interrupt
-      comparator_start_wait_interrupt(baud_meter_handle_comp_interrupt);
-      START_TIMER(baud_meter_timeout_timer, BAUD_METER_TIMEOUT_MS);
+      baud_meter_start_fast_capture();
+    }
+    else if (edges_cnt == 0)
+    {
+      //nothing was detected in slow mode
+      if (TIMER_ELAPSED(baud_meter_timeout_timer))
+      {
+        //timeout, but nothing foung - update screen
+        baud_meter_update_period(min_bit_length);
+        baud_meter_processing_state = BAUD_PROCESSING_IDLE;
+      }
+      else
+      {
+        //start it again - no timeout yet
+        adc_capture_start();
+        baud_meter_processing_state = BAUD_PROCESSING_CAPTURE_SLOW_RUNNING;
+      }
     }
     else
     {
@@ -143,7 +166,15 @@ void baud_meter_process_captured_data(void)
   else if (adc_current_sample_rate == DATA_PROC_SAMPLE_RATE_2M)
   {
     if (baud_meter_fast_meas_count < BAUD_METER_FAST_MEAS_TOTAL_CNT)
+    {
+      /*
+      if (edges_cnt > 5)
+        baud_meter_fast_bit_length_table[baud_meter_fast_meas_count] = min_bit_length;
+      else
+        baud_meter_fast_bit_length_table[baud_meter_fast_meas_count] = 0xFFFF;
+      */
       baud_meter_fast_bit_length_table[baud_meter_fast_meas_count] = min_bit_length;
+    }
     baud_meter_fast_meas_count++;
     
     if (baud_meter_fast_meas_count > BAUD_METER_FAST_MEAS_TOTAL_CNT)
@@ -151,12 +182,25 @@ void baud_meter_process_captured_data(void)
       //time to get final result
       baud_meter_process_fast_captured_data();
       baud_meter_processing_state = BAUD_PROCESSING_IDLE;//useg to change to 200K mode
-      return;
     }
-    baud_meter_processing_state = BAUD_PROCESSING_CAPTURE_FAST_WAIT; //wait for comparator interrupt
-    comparator_start_wait_interrupt(baud_meter_handle_comp_interrupt);
-    START_TIMER(baud_meter_timeout_timer, BAUD_METER_TIMEOUT_MS);
+    else
+    {
+      //start capturing with interrupt
+      baud_meter_processing_state = BAUD_PROCESSING_CAPTURE_FAST_WAIT; //wait for comparator interrupt
+      comparator_start_wait_interrupt(baud_meter_handle_comp_interrupt);
+      START_TIMER(baud_meter_timeout_timer, BAUD_METER_TIMEOUT_MS);
+    }
   }
+}
+
+void baud_meter_start_fast_capture(void)
+{
+  adc_set_sample_rate(DATA_PROC_SAMPLE_RATE_2M);
+  baud_meter_fast_meas_count = 0;
+  memset(&baud_meter_fast_bit_length_table[0], 0, sizeof(baud_meter_fast_bit_length_table));
+  baud_meter_processing_state = BAUD_PROCESSING_CAPTURE_FAST_WAIT; //wait for comparator interrupt
+  comparator_start_wait_interrupt(baud_meter_handle_comp_interrupt);
+  START_TIMER(baud_meter_timeout_timer, BAUD_METER_TIMEOUT_MS);
 }
 
 //Called from comparator interrupt
@@ -186,8 +230,18 @@ void baud_meter_process_fast_captured_data(void)
       }
     }
   }
-  baud_meter_update_period(min_period);  
- 
+  
+  if ((min_period > 1) && (min_period < 0xFFFF))
+    baud_meter_fast_data_detected_flag = 1;
+  else
+    baud_meter_fast_data_detected_flag = 0;
+  
+  baud_meter_update_period(min_period);
+  
+  if (baud_meter_current_rounded_baud == 9600)
+  {
+    baud_meter_current_rounded_baud = 9600;
+  }
 }
 
 
@@ -207,19 +261,15 @@ void baud_meter_round_baudrate(void)
       baud_meter_current_rounded_baud = baud_meter_bauds_table[i];
     i++;
   }
-  
-  if (baud_meter_current_rounded_baud == 57600)
-  {
-    i++;
-  }
 }
 
 
 //Function calculate min length of low level
-uint16_t baud_meter_get_min_length(void)
+uint16_t baud_meter_get_min_length(uint16_t* edges_cnt_p)
 {
   uint16_t raw_threshold = 
     data_processing_volt_to_points(BAUD_METER_THRESHOLD_VOLTAGE);
+  uint16_t falling_egeds_counter = 0;
   
   uint16_t i;//sample number
   uint8_t prev_logic_state;
@@ -244,6 +294,7 @@ uint16_t baud_meter_get_min_length(void)
       if (cur_logic_state == 0) //falling edge
       {
         falling_start_pos = i;
+        falling_egeds_counter++;
       }
       else //rising edge
       {
@@ -261,6 +312,7 @@ uint16_t baud_meter_get_min_length(void)
   
   //if (falling_start_pos == 0)
   //  return 0;
+  *edges_cnt_p = falling_egeds_counter;
 
   return min_low_length;
 }

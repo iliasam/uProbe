@@ -399,9 +399,14 @@ void menu_print_current_frequency(char* str)
 {
   if (freq_measurement_calc_frequency < 9)
     sprintf(str, "UNKNOWN");
-  else if (freq_measurement_calc_frequency > 99999)
+  else if (freq_measurement_calc_frequency > 99999)//100khz
     sprintf(str, "%d KHz", (freq_measurement_calc_frequency / 1000));
-  else if (freq_measurement_calc_frequency < 1000)
+  else if (freq_measurement_calc_frequency > 9999)//10 khz
+  {
+    float freq_khz = (float)freq_measurement_calc_frequency / 1000;//in kHz
+    sprintf(str, "%.02f K", freq_khz);
+  }
+  else if (freq_measurement_calc_frequency < 1000)//1 khz
     sprintf(str, " %d Hz    ", freq_measurement_calc_frequency);
   else
     sprintf(str, "%dHz    ", freq_measurement_calc_frequency);
@@ -410,9 +415,9 @@ void menu_print_current_frequency(char* str)
 void menu_print_big_voltage(char* str, float voltage)
 {
   if (voltage < 10.0f)
-    sprintf(str, " %.02fV", voltage);
+    sprintf(str, " %.01fV", voltage);
   else
-    sprintf(str, "%.02fV", voltage);
+    sprintf(str, "%.01fV", voltage);
 }
 
 // Shift null-terminated string to right corner
