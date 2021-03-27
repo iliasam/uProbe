@@ -54,7 +54,7 @@ void baud_meter_processing_main_mode_changed(void)
   if (main_menu_mode == MENU_MODE_BAUD_METER)
   {
     comparator_init(USE_INTERUPT_MODE);
-    comparator_change_threshold_voltage(BAUD_METER_THRESHOLD_VOLTAGE);
+    comparator_set_threshold(BAUD_METER_THRESHOLD_VOLTAGE);
   }
 }
 

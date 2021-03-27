@@ -123,23 +123,10 @@
 //Main comparator - connected directly to the divider 
 #define COMP_MAIN_NAME                  COMP_Selection_COMP4
 
-#define COMP_MAIN_TIM_NAME              TIM4
-#define COMP_MAIN_TIM_CLK               RCC_APB1Periph_TIM4 //32 MHz
-#define COMP_MAIN_TIM_CH                TIM_Channel_2
-#define COMP_MAIN_TIM_CH_REG            CCR2
-#define COMP_MAIN_TIM_IRQ               TIM4_IRQn
-#define COMP_MAIN_TIM_IRQ_HANDLER       TIM4_IRQHandler
-#define COMP_MAIN_TIM_DMA_SRC           TIM_DMA_CC2
-
-
 #define COMP_MAIN_IRQ                   COMP4_5_6_IRQn
 //COMP4 is internally connected to EXTI Line 30
 #define COMP_MAIN_IRQ_EXTI_LINE         EXTI_Line30
 #define COMP_MAIN_EXTI_IRQ_HANDLER      COMP4_5_6_IRQHandler
-
-#define COMP_MAIN_DMA_CH                DMA1_Channel4//TIM4_CH2
-#define COMP_MAIN_DMA_FLAG              DMA1_IT_TC4
-
 
 #define FREQ_MEAS_TIM_NAME              TIM1
 #define FREQ_MEAS_TIM_CLK_INIT_F        RCC_APB2PeriphClockCmd
@@ -147,7 +134,7 @@
 #define FREQ_MEAS_TIM_IRQ               TIM1_UP_TIM16_IRQn
 #define FREQ_MEAS_TIM_IRQ_HANDLER       TIM1_UP_TIM16_IRQHandler
 
-//External clock nput - COMP4_OUT
+//External clock input - COMP4_OUT
 #define FREQ_MEAS_TIM_ETR_GPIO          GPIOA
 #define FREQ_MEAS_TIM_ETR_PIN           GPIO_Pin_12
 #define FREQ_MEAS_TIM_ETR_AF_SRC        GPIO_PinSource12
