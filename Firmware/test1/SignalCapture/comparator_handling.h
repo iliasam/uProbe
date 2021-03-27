@@ -19,6 +19,8 @@ typedef enum
 #define USE_INTERUPT_MODE               (1)
 #define USE_NO_EVENTS_COMP              (2)
 
+#define COMP_INTERRUPTS_DWT_BUF_SIZE    (128)
+
 //Callback function - called when interrupt from comparator happens
 typedef void (*comp_interrupt_callback_t)(void);
 
@@ -41,7 +43,7 @@ void comparator_processing_handler(void);
 void comparator_start_freq_capture(void);
 void comparator_processing_main_mode_changed(void);
 void comparator_change_threshold_voltage(float value);
-void comparator_start_wait_interrupt(comp_interrupt_callback_t callback_func);
+void comparator_start_wait_interrupt(void);
 void comparator_init(uint8_t interrupt_mode);
 
 void comparator_set_threshold(float voltage);

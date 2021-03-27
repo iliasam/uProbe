@@ -8,6 +8,7 @@
 #include "data_processing.h"
 #include "adc_controlling.h"
 #include "freq_measurement.h"
+#include "hardware.h"
 #include "main.h"
 #include "string.h"
 
@@ -31,6 +32,7 @@
 #define COMP_MIN_PERIOD_IN_SLOW_MODE    (80)
 
 #define COMP_MIN_PERIOD_IN_FAST_MODE    (5)
+
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -60,7 +62,9 @@ uint16_t comparator_dma_events = 0;
 float comparator_min_voltage = 500.0f;
 float comparator_max_voltage = 0.0f;
 
-comp_interrupt_callback_t comparator_interrupt_callback_func = NULL;
+volatile uint16_t comparator_int_counter = 0;//Interrupts counter
+volatile uint32_t comparator_int_dwt_buff[COMP_INTERRUPTS_DWT_BUF_SIZE];
+volatile uint8_t comparator_int_dwt_buff_full = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void comparator_set_threshold(float voltage);
@@ -78,13 +82,24 @@ void COMP_MAIN_EXTI_IRQ_HANDLER(void);
 
 void COMP_MAIN_EXTI_IRQ_HANDLER(void)
 {
-  //if(EXTI_GetITStatus(COMP_MAIN_IRQ_EXTI_LINE) != RESET)
+  EXTI_ClearITPendingBit(COMP_MAIN_IRQ_EXTI_LINE);
+  
+  if (comparator_int_counter < COMP_INTERRUPTS_DWT_BUF_SIZE)
   {
-    EXTI_ClearITPendingBit(COMP_MAIN_IRQ_EXTI_LINE);
-    COMP_Cmd(COMP_MAIN_NAME, DISABLE);
-    if (comparator_interrupt_callback_func != NULL)
-      comparator_interrupt_callback_func();
+    comparator_int_dwt_buff[comparator_int_counter] = hardware_dwt_get();
+    comparator_int_counter++;
   }
+  else
+  {
+    COMP_Cmd(COMP_MAIN_NAME, DISABLE);
+    comparator_int_dwt_buff_full = 1;
+  }
+  
+  
+  
+  //COMP_Cmd(COMP_MAIN_NAME, DISABLE);
+  //if (comparator_interrupt_callback_func != NULL)
+  //  comparator_interrupt_callback_func();
 }
 
 void COMP_MAIN_TIM_IRQ_HANDLER(void)
@@ -455,11 +470,10 @@ void comparator_change_threshold_voltage(float value)
   comparator_threshold_v = value;
 }
 
-void comparator_start_wait_interrupt(comp_interrupt_callback_t callback_func)
+void comparator_start_wait_interrupt(void)
 {
-  if (callback_func == NULL)
-    return;
-  comparator_interrupt_callback_func = callback_func;
+  comparator_int_counter = 0;
+  comparator_int_dwt_buff_full = 0;
   
   NVIC_InitTypeDef NVIC_InitStructure;
   
