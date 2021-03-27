@@ -7,11 +7,7 @@
 typedef enum
 {
   BAUD_PROCESSING_IDLE = 0,
-  BAUD_PROCESSING_CAPTURE_SLOW_RUNNING,
   BAUD_PROCESSING_CAPTURE_FAST_RUNNING,
-  BAUD_PROCESSING_CAPTURE_FAST_WAIT,
-  BAUD_PROCESSING_DATA,
-  BAUD_PROCESSING_DATA_DONE
 } baud_meter_processing_state_t;
 
 extern uint32_t baud_meter_current_rounded_baud;
@@ -19,7 +15,6 @@ extern uint32_t baud_meter_current_rounded_baud;
 /* Exported functions ------------------------------------------------------- */
 void baud_meter_processing_main_mode_changed(void);
 void baud_meter_processing_handler(void);
-uint8_t baud_meter_is_in_fast_mode(void);
 
 
 #endif 

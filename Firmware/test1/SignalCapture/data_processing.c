@@ -176,7 +176,6 @@ void data_processing_main_mode_changed(void)
   //addition processing for SLOW_SCOPE mode
   slow_scope_processing_main_mode_changed();
   baud_meter_processing_main_mode_changed();
-  //comparator_processing_main_mode_changed();
   freq_measurement_main_mode_changed();
   data_processing_adc_calib_running = 0;//reset
 }

@@ -384,12 +384,7 @@ void menu_baud_meter_menu(menu_draw_type_t draw_type)
     
     display_draw_string(tmp_str, 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
     
-    if (baud_meter_is_in_fast_mode())
-      display_draw_string(" Fast mode", 0, 70, FONT_SIZE_8, 0, COLOR_WHITE);
-    else
-      display_draw_string("          ", 0, 70, FONT_SIZE_8, 0, COLOR_WHITE);
-      
-    
+
     display_update();
   }
 }
