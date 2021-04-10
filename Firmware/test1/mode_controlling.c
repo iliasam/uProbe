@@ -275,7 +275,7 @@ void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("VOLTMETER MODE", 30, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    display_draw_string("VOLTMETER MODE", 40, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
     display_update();
   }
   else //PARTIAL update
@@ -290,7 +290,10 @@ void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
     {
       char tmp_str[32];
       menu_print_big_voltage(tmp_str, voltmeter_voltage);
-      display_draw_string(tmp_str, 10, 20, FONT_SIZE_33, 0, COLOR_WHITE);
+      if (voltmeter_voltage < 28)
+        display_draw_string(tmp_str, 20, 20, FONT_SIZE_33, 0, COLOR_WHITE);
+      else
+        display_draw_string(tmp_str, 20, 20, FONT_SIZE_33, 0, COLOR_RED);//Inaccurate
       display_update();
     }
     
@@ -409,10 +412,10 @@ void menu_print_current_frequency(char* str)
 
 void menu_print_big_voltage(char* str, float voltage)
 {
-  if (voltage < 10.0f)
-    sprintf(str, " %.01fV", voltage);
+  if (voltage <= 9.9f)
+    sprintf(str, " %.01fV ", voltage);
   else
-    sprintf(str, "%.01fV", voltage);
+    sprintf(str, "%.01fV ", voltage);
 }
 
 // Shift null-terminated string to right corner
