@@ -1,3 +1,4 @@
 Battery - LP602030 - Robiton, 6x20x30, 300 mA*h
 LCD - IPS 160x80 0.96 inch, Color, ST7735S.
 Marker (used as case) - Faber-Castell  Textliner 48
+Needle - length 38mm.

@@ -22,11 +22,13 @@
 /* Private variables ---------------------------------------------------------*/
 extern menu_mode_t main_menu_mode;
 
-extern volatile uint32_t comparator_int_dwt_buff[COMP_INTERRUPTS_DWT_BUF_SIZE];
-extern volatile uint8_t comparator_int_dwt_buff_full;
-extern volatile uint16_t comparator_int_counter;//Interrupts counter
+extern volatile uint32_t comparator_irq_dwt_buff[COMP_INTERRUPTS_DWT_BUF_SIZE];
+extern volatile uint8_t comparator_irq_dwt_buff_full;
+extern volatile uint16_t comparator_irq_counter;//Interrupts counter
 
+// Raw baudrate value, bod
 float baud_meter_current_raw_baud = 0.0;
+// Rounded to a closer from table value, bod
 uint32_t baud_meter_current_rounded_baud = 0;
 
 uint32_t baud_meter_update_timestamp = 0;
@@ -69,7 +71,7 @@ void baud_meter_processing_handler(void)
   }
   else if (baud_meter_processing_state == BAUD_PROCESSING_CAPTURE_FAST_RUNNING)
   {
-    if (comparator_int_dwt_buff_full)
+    if (comparator_irq_dwt_buff_full)
     {
       uint32_t min_length = baud_meter_get_min_length();
       baud_meter_update_period(min_length);
@@ -78,19 +80,19 @@ void baud_meter_processing_handler(void)
     else
     {
       uint32_t time_diff = ms_tick - baud_meter_timeout_timer;
-      if ((time_diff > 1500) && (comparator_int_counter < 10))
+      if ((time_diff > 1500) && (comparator_irq_counter < 10))
       {
-        baud_meter_update_period(0);
+        baud_meter_update_period(0);//fail
         baud_meter_processing_state = BAUD_PROCESSING_IDLE;
       }
-      else if ((time_diff > 2000) && (comparator_int_counter < 50))
+      else if ((time_diff > 2000) && (comparator_irq_counter < 50))
       {
-        baud_meter_update_period(0);
+        baud_meter_update_period(0);//fail
         baud_meter_processing_state = BAUD_PROCESSING_IDLE;
       }
       else if (time_diff > 4000)
       {
-        baud_meter_update_period(0);
+        baud_meter_update_period(0);//fail
         baud_meter_processing_state = BAUD_PROCESSING_IDLE;
       }
     }
@@ -100,9 +102,9 @@ void baud_meter_processing_handler(void)
 uint32_t baud_meter_get_min_length(void)
 {
   uint32_t min_length_value = 0xFFFFFFFF;
-  for (uint16_t i = 0; i < (comparator_int_counter - 1); i++)
+  for (uint16_t i = 0; i < (comparator_irq_counter - 1); i++)
   {
-    uint32_t curr_length = comparator_int_dwt_buff[i + 1] - comparator_int_dwt_buff[i];
+    uint32_t curr_length = comparator_irq_dwt_buff[i + 1] - comparator_irq_dwt_buff[i];
     if (curr_length < min_length_value)
       min_length_value = curr_length;
   }
@@ -111,7 +113,7 @@ uint32_t baud_meter_get_min_length(void)
 }
 
 
-// Try to fine close baudrate in the table
+// Try to find closest baudrate in the table
 void baud_meter_round_baudrate(void)
 {
   if (baud_meter_current_raw_baud == 0)
@@ -135,7 +137,7 @@ void baud_meter_round_baudrate(void)
   }
 }
 
-
+//Calculate "baud_meter_current_rounded_baud" value
 void baud_meter_update_period(uint32_t new_bit_length)
 {
   if (new_bit_length == 0)

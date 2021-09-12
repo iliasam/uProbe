@@ -19,16 +19,16 @@
 /* Private variables ---------------------------------------------------------*/
 extern float data_processing_main_div;
 
-//Comparator threshold voltage, V
+// Comparator threshold voltage, V
 float comparator_threshold_v = FREQ_TRIGGER_DEFAULT_V;
 
 // Values calculated during trigger voltage calibration
 float comparator_min_voltage = 500.0f;
 float comparator_max_voltage = 0.0f;
 
-volatile uint16_t comparator_int_counter = 0;//Interrupts counter
-volatile uint32_t comparator_int_dwt_buff[COMP_INTERRUPTS_DWT_BUF_SIZE];
-volatile uint8_t comparator_int_dwt_buff_full = 0;
+volatile uint16_t comparator_irq_counter = 0;//Interrupts counter
+volatile uint32_t comparator_irq_dwt_buff[COMP_INTERRUPTS_DWT_BUF_SIZE];
+volatile uint8_t comparator_irq_dwt_buff_full = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void COMP_MAIN_EXTI_IRQ_HANDLER(void);
@@ -40,15 +40,15 @@ void COMP_MAIN_EXTI_IRQ_HANDLER(void)
 {
   EXTI_ClearITPendingBit(COMP_MAIN_IRQ_EXTI_LINE);
   
-  if (comparator_int_counter < COMP_INTERRUPTS_DWT_BUF_SIZE)
+  if (comparator_irq_counter < COMP_INTERRUPTS_DWT_BUF_SIZE)
   {
-    comparator_int_dwt_buff[comparator_int_counter] = hardware_dwt_get();
-    comparator_int_counter++;
+    comparator_irq_dwt_buff[comparator_irq_counter] = hardware_dwt_get();
+    comparator_irq_counter++;
   }
   else
   {
     COMP_Cmd(COMP_MAIN_NAME, DISABLE);
-    comparator_int_dwt_buff_full = 1;
+    comparator_irq_dwt_buff_full = 1;
   }
 }
 
@@ -95,18 +95,18 @@ void comparator_init(uint8_t interrupt_mode)
   GPIO_Init(COMP_GPIO, &GPIO_InitStructure);
   
   COMP_StructInit(&COMP_InitStructure);
-  COMP_InitStructure.COMP_InvertingInput    = COMP_InvertingInput_DAC1OUT1;
+  COMP_InitStructure.COMP_InvertingInput = COMP_InvertingInput_DAC1OUT1;
   COMP_InitStructure.COMP_NonInvertingInput = COMP_NonInvertingInput_IO1;
   COMP_InitStructure.COMP_Output = COMP_Output_None;
     
-  COMP_InitStructure.COMP_Mode              = COMP_Mode_HighSpeed;
-  COMP_InitStructure.COMP_Hysteresis        = COMP_Hysteresis_No;
-  COMP_InitStructure.COMP_OutputPol         = COMP_OutputPol_NonInverted;
+  COMP_InitStructure.COMP_Mode = COMP_Mode_HighSpeed;
+  COMP_InitStructure.COMP_Hysteresis = COMP_Hysteresis_No;
+  COMP_InitStructure.COMP_OutputPol = COMP_OutputPol_NonInverted;
   COMP_Init(COMP_MAIN_NAME, &COMP_InitStructure);
   
   COMP_Cmd(COMP_MAIN_NAME, ENABLE);
   
-  if (interrupt_mode == USE_INTERUPT_MODE)
+  if (interrupt_mode == USE_INTERUPT_MODE) //used to measure baudrate
   {
     COMP_Cmd(COMP_MAIN_NAME, DISABLE);
     
@@ -116,7 +116,7 @@ void comparator_init(uint8_t interrupt_mode)
     EXTI_InitStructure.EXTI_LineCmd = ENABLE;
     EXTI_Init(&EXTI_InitStructure);
   }
-  else if (interrupt_mode == USE_NO_EVENTS_COMP) //used to measure freqency
+  else if (interrupt_mode == USE_NO_EVENTS_COMP) //used to measure frequency
   {   
     EXTI_InitStructure.EXTI_Line = COMP_MAIN_IRQ_EXTI_LINE;
     EXTI_InitStructure.EXTI_LineCmd = DISABLE;
@@ -134,7 +134,7 @@ void comparator_init(uint8_t interrupt_mode)
     GPIO_Init(COMP_OUT_GPIO, &GPIO_InitStructure);
     GPIO_PinAFConfig(COMP_OUT_GPIO, COMP_OUT_AF_SRC, COMP_OUT_AFIO);
   }
-  else
+  else //called at startup init
   {
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
@@ -180,8 +180,8 @@ void comparator_set_threshold(float voltage)
 
 void comparator_start_wait_interrupt(void)
 {
-  comparator_int_counter = 0;
-  comparator_int_dwt_buff_full = 0;
+  comparator_irq_counter = 0;
+  comparator_irq_dwt_buff_full = 0;
   
   NVIC_InitTypeDef NVIC_InitStructure;
   

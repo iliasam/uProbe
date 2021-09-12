@@ -22,7 +22,7 @@ menu_selector_item_t menu_selector_items[] =
   {2, MENU_SUBITEM_INFO, "INFO"},
   {3, MENU_SUBITEM_CALIBRATE, "CALIBRATE ADC"},
   {4, MENU_SUBITEM_SET_OFF_TIME, "SET OFF TIME"},
-  {4, MENU_SUBITEM_RESET, "RESET"},
+  {5, MENU_SUBITEM_RESET, "RESET"}, //reset in needed if device can't enter sleep
   {0, MENU_SUBITEM_NULL, ""}, //null item
 };
 
@@ -132,7 +132,8 @@ void menu_selector_draw_items(void)
   display_draw_string("  SELECT MENU", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
   while (menu_selector_items[i].item_number > 0)
   {
-    display_draw_string((char*)menu_selector_items[i].name, 8, y_pos, FONT_SIZE_11, 0, COLOR_WHITE); //shifted right for displaying cursor
+     //shifted right for displaying cursor
+    display_draw_string((char*)menu_selector_items[i].name, 8, y_pos, FONT_SIZE_11, 0, COLOR_WHITE);
     
     //draw cursor
     if (menu_selector_items[i].item_type == menu_selector_selected)
@@ -186,6 +187,11 @@ void menu_selector_draw_subitems(void)
       
     case MENU_SUBITEM_CALIBRATE: 
       menu_selector_draw_adc_calib_menu();
+      break;
+      
+    case MENU_SUBITEM_RESET:
+      // Not good written
+      NVIC_SystemReset();
       break;
     
     default: break;
@@ -294,7 +300,7 @@ void menu_selector_draw_adc_calib_menu(void)
 void menu_selector_draw_info_menu(void)
 {
   display_draw_string("DEVICE INFO", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
-  display_draw_string("FW VERSION: 1.2", 0, 14, FONT_SIZE_11, 0, COLOR_WHITE);
+  display_draw_string(FW_VERSION_STRING, 0, 14, FONT_SIZE_11, 0, COLOR_WHITE);
   
   char tmp_str[32];
   float bat_voltage = power_controlling_meas_battery_voltage();

@@ -1,5 +1,6 @@
 //DMA is working in Normal mode, not Circular
-
+//Two ADC are mesuring same signal simultaneously, 
+//but ADC2 is connected to integrated OPAMP
 
 /* Includes ------------------------------------------------------------------*/
 #include "config.h"

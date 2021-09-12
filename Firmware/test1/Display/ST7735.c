@@ -238,55 +238,7 @@ void display_init(void)
   display_write_data8(0xA8);//
 
   display_write_cmd(0x29); 
-  /*
-  display_write_cmd(0xAE); //  Display off
-  display_set_column_address(0);
-  display_set_start_line(0);
-  display_set_page_address(0);
-  display_set_contrast_value(DISP_DEFAULT_CONTRAST);
- 
-  // This command changes the mapping between 
-  // the display data column address and the segment driver.
-  display_write_cmd(0xA1); //set segment remap
-  display_write_cmd(0xA4);
-  
-  display_write_cmd(0xA8); //multiplex ratio
-  display_write_cmd(0x3F); //duty = 1/64
-  
-  display_write_cmd(0xC8); //Com scan direction
-  
-  display_write_cmd(0xD3); //set display offset
-  display_write_cmd(0x00);
-  
-  display_write_cmd(0xD5); //set osc division
-  display_write_cmd(0x90);
-  
-  display_write_cmd(0xD9); //set pre-charge period
-  display_write_cmd(0x22);
-  
-  display_write_cmd(0xDA); //set COM pins
-  display_write_cmd(0x12);
-  
-  display_write_cmd(0xdb); //set vcomh
-  display_write_cmd(0x30);
-  
-  display_write_cmd(0x8d); //set charge pump enable
-  display_write_cmd(0x14);
-  
-    display_write_cmd(SSD1315_NORMAL_MODE_CMD);
-  // display_write_cmd(SSD1315_INVERSE_MODE_CMD);
-  display_write_cmd(SSD1315_ALL_OFF_CMD);
-  // display_write_cmd(SSD1315_ALL_ON_CMD);
- 
-#if (INVERT_MODE==1)
 
-#else
-
-#endif
-
-  display_write_cmd(0xAF); //  Display on - ok
-  */
-  
   display_delay(100000);
 
   display_x = 0;
@@ -296,19 +248,7 @@ void display_init(void)
 // Clear display
 void display_clear(void)
 {
-  /*
-  unsigned char x, y;
-  for (y = 0; y < DISP_PAGE_CNT; y++) //clear page 0~7
-  {
-    display_write_cmd(SSD1315_SET_PAGE_ADDR + y); // Set page
-    display_write_cmd(0x00); // Set column
-    display_write_cmd(0x10); // Set column
-    for (x = 0; x < DISP_WIDTH; x++) //clear all columns
-    {
-      display_write_data(0x00);
-    }
-  }
-  */
+
 }
 
 void LCD_SetCursor(uint16_t Xstart, uint16_t Ystart, uint16_t Xend, uint16_t  Yend)

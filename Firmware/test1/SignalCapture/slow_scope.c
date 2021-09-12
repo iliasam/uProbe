@@ -27,7 +27,8 @@
 
 #define SLOW_SCOPE_ACTIVE_HEIGHT        (SLOW_SCOPE_Y_END - SLOW_SCOPE_HEADER_HEIGHT)
 
-
+//In pixels
+#define SLOW_SCOPE_X_GRID_PERIOD_1S     (8.7f)
 
 /* Private variables ---------------------------------------------------------*/
 extern menu_mode_t main_menu_mode;
@@ -38,6 +39,10 @@ extern volatile uint32_t ms_tick;
 slow_scope_data_processing_state_t slow_scope_state = ADC_SLOW_IDLE;
 
 adc_processed_data_t slow_scope_last_result;
+
+//Value in pixels
+//TODO - add automatic calculation
+float slow_scope_1s_period_pix = SLOW_SCOPE_X_GRID_PERIOD_1S;
 
 //Circullar buffer
 adc_processed_data_t slow_scope_points[SLOW_SCOPE_POINT_CNT];
@@ -74,6 +79,7 @@ uint16_t slow_scope_get_y_from_voltage(float voltage);
 void slow_scope_draw_signal(void);
 uint16_t slow_scope_draw_edges(uint16_t x, adc_processed_data_t point);
 void slow_scope_calcutate_grid_step(void);
+void slow_scope_update_rate_measure(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -110,10 +116,13 @@ void slow_scope_processing_handler(void)
       slow_scope_state = ADC_SLOW_PROCESSING_DATA;
       data_processing_correct_raw_data(data_processing_get_adc_offset());
       slow_scope_process_data();
+      slow_scope_update_rate_measure();
       slow_scope_state = ADC_SLOW_PROCESSING_DATA_DONE;
     }
   }
 }
+
+
 
 void slow_scope_process_data(void)
 {
@@ -276,10 +285,10 @@ void slow_scope_calcutate_grid_step(void)
 void slow_scope_draw_grid(void)
 {
   //Graw time grid - X
-  int16_t x;
-  for (x = (SLOW_SCOPE_POINT_CNT - 1); x >= 0; x = x - SLOW_SCOPE_X_GRID_PERIOD)
+  float x;
+  for (x = (SLOW_SCOPE_POINT_CNT - 1); x >= 0.0f; x = x - slow_scope_1s_period_pix)
   {
-    slow_scope_draw_voltage_grid(x);
+    slow_scope_draw_voltage_grid((int)x);
   }
   
   display_draw_line(SLOW_SCOPE_Y_END, COLOR_BLUE);
@@ -316,4 +325,26 @@ void slow_scope_clear_active_zone(void)
   uint8_t y;
   for (y = SLOW_SCOPE_HEADER_HEIGHT; y < DISPLAY_HEIGHT; y++)
     display_draw_line(y, COLOR_BLACK);
+}
+
+//Measuring screen update rate
+//was used for calculating SLOW_SCOPE_X_GRID_PERIOD_1S
+void slow_scope_update_rate_measure(void)
+{
+  static uint8_t counter = 0;
+  static uint32_t update_timestamp = 0;
+
+  uint32_t diff_ms = 0;
+  if (counter == 0)
+  {
+    diff_ms = ms_tick - update_timestamp;
+    update_timestamp = ms_tick;
+  }
+  
+  if (diff_ms > 1000)
+    __ASM("nop");
+  
+  counter++;
+  if (counter >= 10)
+    counter = 0;
 }
