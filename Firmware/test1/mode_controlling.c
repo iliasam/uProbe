@@ -1,3 +1,5 @@
+//Drawinf off modes are called from here
+
 /* Includes ------------------------------------------------------------------*/
 #include "mode_controlling.h"
 #include "display_functions.h"
@@ -21,9 +23,10 @@ freq_meter_calib_state_t freq_meter_calib_state = FREQ_METER_CALIB_IDLE;
 
 #define VOLTAGE_BAR_HEIGHT      (6)
 
+//Horizontal bar levels
 #define MENU_LOW_LEVEL_VALUE_V      (1.0f)
-#define MENU_HIGH_LEVEL_VALUE_V     (2.0f)
-#define MENU_MAX_LEVEL_VALUE_V      (5.0f)
+#define HOR_BAR_HIGH_LEVEL_VALUE_V     (2.0f)
+#define HOR_BAR_MAX_LEVEL_VALUE_V      (5.0f)
 
 /* Private function prototypes -----------------------------------------------*/
 void menu_draw_logic_probe_menu(menu_draw_type_t draw_type);
@@ -52,8 +55,8 @@ void menu_lower_button_pressed(void)
     return;
   }
   
-  // Здесь должен проверяться текущий режим, 
-  // и в соответствии с ним нужно переключаться на новое меню или по другому обрабатывать кнопку
+  //Current mode must be checked here
+  //and based on it we ned to switch to next menu or execute command
   menu_main_switch_to_next_mode();
 }
 
@@ -162,6 +165,7 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
   {
     display_clear_framebuffer();
     display_draw_string("LOGIC PROBE MODE", 30, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    //display_draw_string("1", 30 + FONT_SIZE_8_WIDTH*17, 0, FONT_SIZE_8, LCD_INVERTED_FLAG, COLOR_YELLOW);
     display_update();
   }
   else //PARTIAL update
@@ -223,7 +227,7 @@ void menu_draw_voltage_bar(float meas_avr_voltage_v)
   uint16_t low_x_offset_pix = 
     menu_draw_get_bar_horiz_value_pix(MENU_LOW_LEVEL_VALUE_V);
   uint16_t hight_x_offset_pix = 
-    menu_draw_get_bar_horiz_value_pix(MENU_HIGH_LEVEL_VALUE_V);
+    menu_draw_get_bar_horiz_value_pix(HOR_BAR_HIGH_LEVEL_VALUE_V);
   
   
   uint8_t color = 0;
@@ -239,7 +243,7 @@ void menu_draw_voltage_bar(float meas_avr_voltage_v)
     if ((x % 2) != 0)
       color = COLOR_GRAY;
     
-    float horiz_volatge = (float)x * MENU_MAX_LEVEL_VALUE_V / (float)LCD_RIGHT_OFFSET;
+    float horiz_volatge = (float)x * HOR_BAR_MAX_LEVEL_VALUE_V / (float)LCD_RIGHT_OFFSET;
     if (horiz_volatge > meas_avr_voltage_v)
       color = COLOR_BLACK;
       
@@ -247,7 +251,6 @@ void menu_draw_voltage_bar(float meas_avr_voltage_v)
         x, start_y, start_y + VOLTAGE_BAR_HEIGHT, color);//low
   }
   
-
   display_draw_vertical_line(
     low_x_offset_pix, start_y, start_y + VOLTAGE_BAR_HEIGHT, COLOR_WHITE);//low
   
@@ -260,12 +263,20 @@ void menu_draw_voltage_bar(float meas_avr_voltage_v)
     0, start_y, start_y + VOLTAGE_BAR_HEIGHT, COLOR_WHITE);//left
   display_draw_vertical_line(
     LCD_RIGHT_OFFSET, start_y, start_y + VOLTAGE_BAR_HEIGHT, COLOR_WHITE);//right
+  
+  display_draw_string("0", 
+    0, start_y + VOLTAGE_BAR_HEIGHT + 3, FONT_SIZE_8, 0, COLOR_WHITE);
+  
+  char tmp_str[5];
+  sprintf(tmp_str, " %d ", (uint16_t)HOR_BAR_MAX_LEVEL_VALUE_V);
+  display_draw_string(tmp_str,
+    LCD_RIGHT_OFFSET - 12, start_y + VOLTAGE_BAR_HEIGHT + 3, FONT_SIZE_8, 0, COLOR_WHITE);
 }
 
 //Return value in hoziz pixels
 uint16_t menu_draw_get_bar_horiz_value_pix(float voltage_v)
 {
-  float result = voltage_v * (float)LCD_RIGHT_OFFSET / MENU_MAX_LEVEL_VALUE_V;
+  float result = voltage_v * (float)LCD_RIGHT_OFFSET / HOR_BAR_MAX_LEVEL_VALUE_V;
   return (uint16_t)result;
 }
 
