@@ -4,7 +4,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 
-#define FW_VERSION_STRING       "FW VERSION: 1.3"
+#define FW_VERSION_STRING       "FW VERSION: 1.4"
 
 // BUTTONS ********************************************************************
 

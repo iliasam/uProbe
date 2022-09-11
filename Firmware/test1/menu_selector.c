@@ -307,7 +307,7 @@ void menu_selector_draw_info_menu(void)
   sprintf(tmp_str, "BATT VOLT: %.02f V", bat_voltage);
   display_draw_string(tmp_str, 0, 30, FONT_SIZE_11, 0, COLOR_WHITE);
   
-  display_draw_string(" by ILIASAM 2021", 0, 60, FONT_SIZE_11, 0, COLOR_WHITE);
+  display_draw_string(" by ILIASAM 2022", 0, 60, FONT_SIZE_11, 0, COLOR_WHITE);
 }
 
 //*****************************************************************************
