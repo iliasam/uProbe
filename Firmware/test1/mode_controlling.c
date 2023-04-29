@@ -56,7 +56,7 @@ void menu_lower_button_pressed(void)
   }
   
   //Current mode must be checked here
-  //and based on it we ned to switch to next menu or execute command
+  //and based on it we need to switch to a next menu or execute command
   menu_main_switch_to_next_mode();
 }
 
@@ -273,7 +273,7 @@ void menu_draw_voltage_bar(float meas_avr_voltage_v)
     LCD_RIGHT_OFFSET - 12, start_y + VOLTAGE_BAR_HEIGHT + 3, FONT_SIZE_8, 0, COLOR_WHITE);
 }
 
-//Return value in hoziz pixels
+//Return value in horiz pixels
 uint16_t menu_draw_get_bar_horiz_value_pix(float voltage_v)
 {
   float result = voltage_v * (float)LCD_RIGHT_OFFSET / HOR_BAR_MAX_LEVEL_VALUE_V;

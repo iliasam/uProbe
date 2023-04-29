@@ -51,7 +51,6 @@ Mkfile.old
 dkms.conf
 
 *.cout
-*.s
 *.pbi
 /Debug
 /Debug
