@@ -4,6 +4,7 @@
 #include "stm32f30x_gpio.h"
 #include "nvram.h"
 #include "ST7735.h"
+#include "main.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -11,7 +12,11 @@
 
 #define BATTERY_ADC_CYCLES      256
 
+#define BATTERY_MEAS_PERIOD_MS  2000
+
 #define BATTERY_ADC_MAX_VALUE   4095.0f
+
+#define BATTERY_LOW_THRESHOLD_V   3.65f
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -24,10 +29,14 @@ extern volatile uint32_t ms_tick;
 // Event time timestamp
 uint32_t power_controlling_event_timestamp  = 0;
 
+uint32_t power_controlling_battery_meas_timestamp  = 0;
+
 uint32_t power_controlling_time_from_event;
 
 //Time of power off, ms
 uint32_t power_controlling_power_off_time_ms = 30000;
+
+uint8_t power_controlling_low_batt_flag = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void power_controlling_init_adc(void);
@@ -87,7 +96,7 @@ void power_controlling_init_adc(void)
   
 }
 
-//Measure battery voltage
+//Measure battery voltage, return value in Volts
 float power_controlling_meas_battery_voltage(void)
 {
   GPIO_InitTypeDef GPIO_InitStructure;
@@ -161,6 +170,17 @@ void power_controlling_handler(void)
 {
   power_controlling_time_from_event = ms_tick - power_controlling_event_timestamp;
   
+  if (TIMER_ELAPSED(power_controlling_battery_meas_timestamp))
+  {
+    START_TIMER(power_controlling_battery_meas_timestamp, BATTERY_MEAS_PERIOD_MS);
+    float batt_voltage = power_controlling_meas_battery_voltage();
+    if (batt_voltage < BATTERY_LOW_THRESHOLD_V)
+      power_controlling_low_batt_flag = 1;
+    else
+      power_controlling_low_batt_flag = 0;
+  }
+  
+  
   //Do not sleep in debug mode
   if (power_controlling_is_debug() != 0)
     power_controlling_event();
@@ -169,6 +189,11 @@ void power_controlling_handler(void)
   {
     power_controlling_enter_sleep();
   }
+}
+
+uint8_t power_controlling_is_batt_low(void)
+{
+  return power_controlling_low_batt_flag;
 }
 
 

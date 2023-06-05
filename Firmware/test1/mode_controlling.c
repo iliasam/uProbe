@@ -11,22 +11,25 @@
 #include "menu_selector.h"
 #include "string.h"
 #include "stdio.h"
+#include "power_controlling.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+#define VOLTAGE_BAR_HEIGHT              (6)
 
+//Horizontal bar levels
+#define MENU_LOW_LEVEL_VALUE_V          (1.0f)
+#define HOR_BAR_HIGH_LEVEL_VALUE_V      (2.0f)
+#define HOR_BAR_MAX_LEVEL_VALUE_V       (5.0f)
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 menu_mode_t main_menu_mode = MENU_MODE_LOGIC_PROBE;
 
 freq_meter_calib_state_t freq_meter_calib_state = FREQ_METER_CALIB_IDLE;
 
-#define VOLTAGE_BAR_HEIGHT      (6)
+uint8_t mode_controling_low_batt_flag = 0;
 
-//Horizontal bar levels
-#define MENU_LOW_LEVEL_VALUE_V      (1.0f)
-#define HOR_BAR_HIGH_LEVEL_VALUE_V     (2.0f)
-#define HOR_BAR_MAX_LEVEL_VALUE_V      (5.0f)
+
 
 /* Private function prototypes -----------------------------------------------*/
 void menu_draw_logic_probe_menu(menu_draw_type_t draw_type);
@@ -35,7 +38,7 @@ void menu_print_current_frequency(char* str);
 
 void menu_baud_meter_menu(menu_draw_type_t draw_type);
 void menu_freq_meter_upper_button_pressed(void);
-void draw_not_supportd(void);//to delete
+void draw_not_supported(void);
 void menu_draw_voltage_bar(float meas_avr_voltage_v);
 uint16_t menu_draw_get_bar_horiz_value_pix(float voltage_v);
 
@@ -104,7 +107,7 @@ void menu_upper_button_hold(void)
   }
 }
 
-// Switch main menu mode to next mode
+// Switch main menu mode to a next mode
 void menu_main_switch_to_next_mode(void)
 {
   main_menu_mode++;
@@ -146,12 +149,57 @@ void menu_redraw_display(menu_draw_type_t draw_type)
     
     
     default: 
-      draw_not_supportd();
+      draw_not_supported();
       break;
   }
 }
 
-void draw_not_supportd(void) //to delete
+void menu_redraw_caption(menu_draw_type_t draw_type)
+{
+  if (power_controlling_is_batt_low())
+  {
+    display_draw_string("**BATTERY LOW!**", 30, 0, FONT_SIZE_8, LCD_INVERTED_FLAG, COLOR_YELLOW);
+    mode_controling_low_batt_flag = 1;
+    return;
+  }
+  else
+  {
+    if (mode_controling_low_batt_flag)
+    {
+      //clear LOW BATT message
+      mode_controling_low_batt_flag = 0;
+      display_draw_string("                ", 30, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    }
+  }
+  
+  switch (main_menu_mode)
+  {
+    case MENU_MODE_LOGIC_PROBE:
+      display_draw_string("LOGIC PROBE MODE", 30, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    break;
+    
+    case MENU_MODE_VOLTMETER:
+      display_draw_string("VOLTMETER MODE", 40, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    break;
+    
+    case MENU_MODE_FREQUENCY_METER:
+      display_draw_string("FREQUENCY MEASUREMENT", 20, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    break;
+    
+    case MENU_MODE_BAUD_METER:
+      display_draw_string("BAUDRATE MEASUREMENT", 20, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    break;
+    
+    case MENU_MODE_SLOW_SCOPE:
+      slow_scope_draw_caption();
+    break;
+
+    default:
+      break;
+  }
+}
+
+void draw_not_supported(void)
 {
   display_clear_framebuffer();
   display_draw_string("NOT SUPPORTED", 0, 0, FONT_SIZE_11, 0, COLOR_WHITE);
@@ -164,8 +212,7 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("LOGIC PROBE MODE", 30, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
-    //display_draw_string("1", 30 + FONT_SIZE_8_WIDTH*17, 0, FONT_SIZE_8, LCD_INVERTED_FLAG, COLOR_YELLOW);
+    menu_redraw_caption(draw_type);
     display_update();
   }
   else //PARTIAL update
@@ -179,6 +226,8 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
     char tmp_str[32];
     if (data_processing_state != PROCESSING_IDLE)
     {
+      menu_redraw_caption(draw_type);
+      
       switch (logic_probe_signal_state)
       {
       case SIGNAL_TYPE_Z_STATE:
@@ -215,7 +264,6 @@ void menu_draw_logic_probe_menu(menu_draw_type_t draw_type)
       menu_draw_voltage_bar(voltmeter_voltage);
 
       display_update();
-      
     }
   }
 }
@@ -286,7 +334,7 @@ void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("VOLTMETER MODE", 40, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    menu_redraw_caption(draw_type);
     display_update();
   }
   else //PARTIAL update
@@ -299,6 +347,7 @@ void menu_draw_voltmeter_menu(menu_draw_type_t draw_type)
     
     if (data_processing_state != PROCESSING_IDLE)
     {
+      menu_redraw_caption(draw_type);
       char tmp_str[32];
       menu_print_big_voltage(tmp_str, voltmeter_voltage);
       if (voltmeter_voltage < 28)
@@ -319,7 +368,7 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("FREQUENCY MEASUREMENT", 20, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    menu_redraw_caption(draw_type);
     
     if (freq_meter_calib_state == FREQ_METER_CALIB_WAIT_START)
     {   
@@ -352,6 +401,7 @@ void menu_draw_frequency_meter_menu(menu_draw_type_t draw_type)
   {
     if (freq_measurement_state == FREQ_MEASUREMENT_PROCESSING_DATA_DONE)
     {
+      menu_redraw_caption(draw_type);
       char tmp_str[32];
       if (freq_meter_calib_state == FREQ_METER_CALIB_IDLE)//normal working
       {
@@ -385,11 +435,12 @@ void menu_baud_meter_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("BAUDRATE MEASUREMENT", 20, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    menu_redraw_caption(draw_type);
     display_update();
   }
   else //PARTIAL update
   {
+    menu_redraw_caption(draw_type);
     char tmp_str[32];
     if (baud_meter_current_rounded_baud < 100)
       sprintf(tmp_str, "  NONE  ");
@@ -397,8 +448,6 @@ void menu_baud_meter_menu(menu_draw_type_t draw_type)
       sprintf(tmp_str, "%d    ", baud_meter_current_rounded_baud);
     
     display_draw_string(tmp_str, 0, 20, FONT_SIZE_33, 0, COLOR_WHITE);
-    
-
     display_update();
   }
 }

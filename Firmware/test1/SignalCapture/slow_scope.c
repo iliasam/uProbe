@@ -143,6 +143,14 @@ void slow_scope_process_data(void)
   slow_scope_points[slow_scope_buf_pointer] = slow_scope_last_result;
 }
 
+void slow_scope_draw_caption(void)
+{
+  if ((slow_scope_capture_en_flag == 0) && ((ms_tick % 1000) < 500))
+    display_draw_string("  STOPPED   ", 0, 0, FONT_SIZE_8, 0, COLOR_RED);
+  else
+    display_draw_string(" SLOW SCOPE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+}
+
 void slow_scope_draw_menu(menu_draw_type_t draw_type)
 {
   static uint8_t new_data_pending = 0;
@@ -150,7 +158,7 @@ void slow_scope_draw_menu(menu_draw_type_t draw_type)
   if (draw_type == MENU_MODE_FULL_REDRAW)
   {
     display_clear_framebuffer();
-    display_draw_string("SLOW SCOPE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+    menu_redraw_caption(draw_type);
     display_update();
   }
   else
@@ -167,10 +175,7 @@ void slow_scope_draw_menu(menu_draw_type_t draw_type)
     
     if (new_data_pending == 1)
     {
-      if ((slow_scope_capture_en_flag == 0) && ((ms_tick % 1000) < 500))
-        display_draw_string("  STOPPED   ", 0, 0, FONT_SIZE_8, 0, COLOR_RED);
-      else
-        display_draw_string(" SLOW SCOPE", 0, 0, FONT_SIZE_8, 0, COLOR_YELLOW);
+      menu_redraw_caption(draw_type);
       
       char tmp_str[32];
       memset(tmp_str, 0, sizeof(tmp_str));

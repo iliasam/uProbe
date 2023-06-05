@@ -53,6 +53,7 @@ void menu_shift_string_right(char* str, uint8_t max_size);
 void menu_upper_button_hold(void);
 void menu_lower_button_hold(void);
 void menu_print_big_voltage(char* str, float voltage);
+void menu_redraw_caption(menu_draw_type_t draw_type);
 
 
 #endif /* __MENU_CONTROLLING_H */

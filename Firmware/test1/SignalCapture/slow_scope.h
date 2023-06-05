@@ -23,6 +23,7 @@ void slow_scope_processing_handler(void);
 
 void slow_scope_draw_menu(menu_draw_type_t draw_type);
 void slow_scope_upper_button_pressed(void);
+void slow_scope_draw_caption(void);
 
 #endif 
 

@@ -17,5 +17,6 @@ void power_controlling_enter_sleep(void);
 void power_controlling_handler(void);
 void power_controlling_event(void);
 void power_controlling_update_power_off_time(void);
+uint8_t power_controlling_is_batt_low(void);
 
 #endif /* __POWER_CONTROLLING_H */
