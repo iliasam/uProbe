@@ -1,6 +1,7 @@
 # uProbe
 Simple logic/oscilloscopic probe for electronic circuits in a highlighter case.  
 Article (in Russian) about it: https://radiokot.ru/artfiles/6639/  
+Article in Engish: https://www.hackster.io/iliasam/uprobe-simple-logic-probe-834bf3  
   
 **See Wiki:** https://github.com/iliasam/uProbe/wiki  for more information.   
   
